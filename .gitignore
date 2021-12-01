@@ -13,3 +13,4 @@ raytracer/obj
 raytracer/raytracer
 **/*.png
 **/*.ppm
+.vscode
