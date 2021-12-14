@@ -49,6 +49,7 @@ bool Plane::hit(const Ray &ray, float &t, ShadeInfo &s) const{
 
 
     if (ray.d * this->n == 0){ //when ray is perpendicular
+        // std::cout << "Plane.cpp:52 - Ray was perpendicular, returning false.\n";
         return false;
     }
     
@@ -60,6 +61,7 @@ bool Plane::hit(const Ray &ray, float &t, ShadeInfo &s) const{
 
         //if intersection happens behind ray
         if (intersect < 0){
+            // std::cout << "Plane.cpp:64 - Intersection happens behind the ray, returning false.\n";
             return false;
         }
 

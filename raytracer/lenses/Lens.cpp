@@ -28,5 +28,13 @@ Point3D Lens::get_random_point() {
     float r = radius_distribution(radius_generator);
     int theta = angle_distribution(angle_generator);
 
-    return Point3D(radius * cos(theta), radius * sin(theta), origin.z);
+    return Point3D(origin.x + (radius * cos(theta)), origin.y + (radius * sin(theta)), origin.z);
+}
+
+Vector3D Lens::get_direction(const Point3D &p) {
+    Vector3D result;
+    result = p - origin;
+    result.normalize();
+
+    return result;
 }

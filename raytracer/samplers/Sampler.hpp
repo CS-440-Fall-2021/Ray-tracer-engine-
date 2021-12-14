@@ -17,16 +17,19 @@
 class Camera;
 class Ray;
 class ViewPlane;
+class Lens;
 
 class Sampler {
 protected:
   Camera *camera_ptr;       // the camera that decides the projectors.
   ViewPlane *viewplane_ptr; // the view plane through which rays are shot.
+  Lens *lens_ptr;
 
 public:
   // Constructors.
   Sampler();                                // initializes members to NULL.
   Sampler(Camera *c_ptr, ViewPlane *v_ptr); // set members.
+  Sampler(Lens *l_ptr, ViewPlane *v_ptr);
 
   // Copy constuctor and assignment operator.
   Sampler(const Sampler &camera) = default;

@@ -26,4 +26,6 @@ public:
 
     // Returns a random point on the surface of the lens
     Point3D get_random_point();
+
+    Vector3D get_direction(const Point3D &p);
 };

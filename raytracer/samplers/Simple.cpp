@@ -4,6 +4,8 @@
 #include "../utilities/Ray.hpp"
 #include "../cameras/Camera.hpp"
 #include "../world/ViewPlane.hpp"
+#include "../lenses/Lens.hpp"
+
 #include <iostream>
 
 Simple::Simple(Camera *c_ptr, ViewPlane *v_ptr) {
@@ -11,13 +13,20 @@ Simple::Simple(Camera *c_ptr, ViewPlane *v_ptr) {
     this->viewplane_ptr = v_ptr;
 }
 
+Simple::Simple(Lens *l_ptr, ViewPlane *v_ptr) {
+    this->lens_ptr = l_ptr;
+    this->viewplane_ptr = v_ptr;
+}
+
 Simple::Simple(const Simple &camera) {
     this->camera_ptr = camera.camera_ptr;
     this->viewplane_ptr = camera.viewplane_ptr;
+    this->lens_ptr = camera.lens_ptr;
 }
 
 Simple &Simple::operator=(const Simple &other) {
     this->camera_ptr = other.camera_ptr;
+    this->lens_ptr = other.lens_ptr;
     this->viewplane_ptr = other.viewplane_ptr;
     return *this;
 }
@@ -77,7 +86,7 @@ Ray Simple::get_center_ray(int px, int py) const {
 
     // Get direction of vector from camera origin to pixel origin on viewplane
     Vector3D direction;
-    direction = camera_ptr->get_direction(origin);
+    direction = lens_ptr->get_direction(origin);
 
     Ray r(origin, direction);
 

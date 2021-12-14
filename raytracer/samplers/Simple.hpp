@@ -18,6 +18,7 @@ public:
   // Constructors.
   Simple() = default;                      // initializes members to NULL.
   Simple(Camera *c_ptr, ViewPlane *v_ptr); // set members.
+  Simple(Lens *l_ptr, ViewPlane *v_ptr);
 
   // Copy constuctor and assignment operator.
   Simple(const Simple &camera);
