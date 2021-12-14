@@ -47,7 +47,7 @@ std::string Triangle::to_string() const{
 BBox Triangle::getBBox() const {
     // gets a bounding box by calculating
     // element-wise max and min extents
-    return BBox(min(min(v0,v1),v2),max(max(v0,v1),v2));
+    return BBox(min(min(v0,v1),v2),max(max(v0,v1),v2), this);
     
 }
 

@@ -2,11 +2,23 @@
 #include "Ray.hpp"
 #include "helpers.hpp"
 #include "../geometry/Geometry.hpp"
+#include <vector>
+#include <algorithm>
 
+BBox::BBox(const Point3D &min, const Point3D &max, const Geometry *g) {
+    pmin = min;
+    pmax = max;
+    if (g!= NULL){
+        geometrylist.push_back(g);
+    }
+}
 BBox::BBox(const Point3D &min, const Point3D &max) {
     pmin = min;
     pmax = max;
+
 }
+
+
 
 std::string BBox::to_string() const {
     std::string result = "pmin: " + pmin.to_string() + "\n" + "pmax: " +  pmax.to_string();
@@ -64,11 +76,23 @@ void BBox::extend(Geometry *g) {
     BBox newbox = g->getBBox();
     this->pmax = max(this->pmax, newbox.pmax);
     this->pmin = min(this->pmin,newbox.pmin);
+    geometrylist.push_back(g);
+
 }
 
 void BBox::extend(const BBox& b){
     this->pmax = max(this->pmax,b.pmax);
     this->pmin = min(this->pmin,b.pmin);
+    int size_given = sizeof(b.geometrylist)/sizeof(b.geometrylist[0]);
+    int size_exist = sizeof(this->geometrylist)/sizeof(this->geometrylist[0]);
+    std::vector<const Geometry *> mixed(size_exist+size_given);
+    std::vector<const Geometry *>::iterator it;
+
+    it=set_union (this->geometrylist.begin(), this->geometrylist.end(), b.geometrylist.begin(), b.geometrylist.end(), mixed.begin());
+
+    mixed.resize(it-mixed.begin()); 
+    this->geometrylist = mixed;
+
 }
 
 bool BBox::contains(const Point3D &p){

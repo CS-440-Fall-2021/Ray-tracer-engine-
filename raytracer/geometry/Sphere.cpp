@@ -42,7 +42,7 @@ BBox Sphere::getBBox() const {
     // creates a Bounding box of length 2*radius
     // with the center of circle in middle
     return BBox(this->c - Vector3D(this->r, this->r, this->r),
-        this->c + Vector3D(this->r, this->r, this->r));
+        this->c + Vector3D(this->r, this->r, this->r), this);
     
 }
 

@@ -7,6 +7,9 @@
 */
 
 #include "Point3D.hpp"
+#include <stdio.h>
+#include <iostream>
+#include <vector>
 
 class Geometry;
 class Ray;
@@ -16,11 +19,13 @@ public:
   // Diagonally opposite points.
   Point3D pmin; // min coordinates.
   Point3D pmax; // max coordinates.
+  std::vector<const Geometry *> geometrylist;
 
 public:
   // Constructors.
   BBox() = default; // both points at origin.
-  BBox(const Point3D& min, const Point3D& max); // set points.
+  BBox(const Point3D& min, const Point3D& max); 
+  BBox(const Point3D& min, const Point3D& max, const Geometry *g); // set points.
 
   // Copy constructor and assignment operator.
   BBox(const BBox &b) = default;
