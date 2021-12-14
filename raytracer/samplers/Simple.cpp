@@ -43,6 +43,7 @@ std::vector<Ray> Simple::get_rays(int px, int py) const {
     origin.y = midpy * pix_height + viewplane_ptr->top_left.y;
     origin.z = viewplane_ptr->top_left.z;
     
+    // Get direction of vector from camera origin to pixel origin on viewplane
     Vector3D direction;
     direction = camera_ptr->get_direction(origin);
 
@@ -52,4 +53,33 @@ std::vector<Ray> Simple::get_rays(int px, int py) const {
     result.push_back(r);
 
     return result;
+}
+
+Ray Simple::get_center_ray(int px, int py) const {
+    // finding middle of a pixel
+    float midpx = px + 0.5;
+    float midpy = py + 0.5;
+
+    // calculating viewplane dimensions in world coordinates
+    float viewplane_width = (viewplane_ptr->bottom_right.x - viewplane_ptr->top_left.x);
+    float viewplane_height = (viewplane_ptr->bottom_right.y - viewplane_ptr->top_left.y);
+
+    // calculating the dimensions of each viewplane pixel in pixel coordinates
+    float pix_width = viewplane_width / viewplane_ptr->vres;
+    float pix_height= viewplane_height / viewplane_ptr->hres; 
+
+    Point3D origin;
+    
+    // mapping the physical pixel to the viewplane pixel
+    origin.x = midpx * pix_width + viewplane_ptr->top_left.x;
+    origin.y = midpy * pix_height + viewplane_ptr->top_left.y;
+    origin.z = viewplane_ptr->top_left.z;
+
+    // Get direction of vector from camera origin to pixel origin on viewplane
+    Vector3D direction;
+    direction = camera_ptr->get_direction(origin);
+
+    Ray r(origin, direction);
+
+    return r;
 }

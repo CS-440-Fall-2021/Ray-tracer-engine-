@@ -39,4 +39,5 @@ public:
   // indexes of the pixel in the view plane, with the origin at the top left of
   // the view plane.
   virtual std::vector<Ray> get_rays(int px, int py) const = 0;
+  virtual Ray get_center_ray(int px, int py) const = 0;
 };

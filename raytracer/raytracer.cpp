@@ -12,6 +12,8 @@
 #include "world/World.hpp"
 #include "world/ViewPlane.hpp"
 
+#include "geometry/Plane.hpp"
+
 int main(int argc, char **argv)
 {
   World world;
@@ -20,9 +22,11 @@ int main(int argc, char **argv)
 
   Sampler *sampler = world.sampler_ptr;
   ViewPlane &viewplane = world.vplane;
+  Plane focal_plane(Point3D(0, 0, viewplane.bottom_right.z + 10), Vector3D(0, 0, 1));
   Image image(viewplane);
 
-  std::vector<Ray> rays;
+  Ray center_ray;
+  std::vector<Ray> primary_rays;
 
   for (int x = 0; x < viewplane.hres; x++) // across.
   {
@@ -33,9 +37,20 @@ int main(int argc, char **argv)
       // weighted sum of the shades for each ray.
       
       RGBColor pixel_color(0);
-      rays = sampler->get_rays(x, y);
+
+      center_ray = sampler->get_center_ray(x, y);
+
+      float t = 0;
+      ShadeInfo sinfo(world);
+      focal_plane.hit(center_ray, t, sinfo);
+
+      Point3D Pf = sinfo.hit_point;
+
+
+
+      primary_rays = sampler->get_rays(x, y);
       
-      for (const auto &ray : rays)
+      for (const auto &ray : primary_rays)
       {
         float weight = ray.w; // ray weight for the pixel.
         ShadeInfo sinfo = world.hit_objects(ray);
