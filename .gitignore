@@ -16,3 +16,4 @@ raytracer/raytracer
 *.fdb_latexmk
 *.fls
 *.synctex.gz
+*.exe
