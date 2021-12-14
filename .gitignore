@@ -17,3 +17,6 @@ raytracer/raytracer
 *.fls
 *.synctex.gz
 *.exe
+
+test.cpp
+*.py
