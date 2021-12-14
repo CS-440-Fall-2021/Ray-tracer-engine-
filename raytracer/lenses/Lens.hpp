@@ -12,9 +12,9 @@ public:
     
     // Random number generators for values of r & theta
     // where 0 < r < radius and 0 < theta < 360
-    std::default_random_engine radius_generator;
-    std::default_random_engine angle_generator;
-    std::uniform_int_distribution<int> radius_distribution;
+    std::mt19937 radius_generator;
+    std::mt19937 angle_generator;
+    std::uniform_real_distribution<float> radius_distribution;
     std::uniform_int_distribution<int> angle_distribution;
 
     // Constructors
