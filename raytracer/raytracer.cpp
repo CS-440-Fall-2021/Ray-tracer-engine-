@@ -45,7 +45,7 @@ int main(int argc, char **argv)
       Ray center_ray;
       std::vector<Ray> primary_rays;
       
-      if (y % 50 == 0) {
+      if (y % 100 == 0) {
         std::cout << "ViewPlane pixel: " + std::to_string(x) + ", " + std::to_string(y) + "\n";
       }
       
@@ -113,7 +113,8 @@ int main(int argc, char **argv)
   std::cout << "Raytracing complete.\n";
 
   // Write image to file.
-  image.write_ppm("scene.ppm");
+  std::string filename = "scene_" + std::to_string(NPR) + "_uniform_random_r" + std::to_string((int)lens.radius) + ".ppm";
+  image.write_ppm(filename);
 
   std::cout << "Wrote image.\n";
 
