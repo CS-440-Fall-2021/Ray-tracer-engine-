@@ -105,6 +105,6 @@ Make sure `g++` is added to your `PATH`. You can check by typing `g++ --version`
 
 Change your current working directory to `raytracer` and run the following:
 ```
-g++ raytracer.cpp "cameras/Parallel.cpp" "cameras/Perspective.cpp" "geometry/Sphere.cpp" "geometry/Triangle.cpp" "geometry/Plane.cpp" "geometry/Geometry.cpp" "materials/Cosine.cpp" "samplers/Sampler.cpp" "samplers/Simple.cpp" "utilities/BBox.cpp" "utilities/helpers.cpp" "utilities/Image.cpp" "utilities/Point3D.cpp" "utilities/Vector3D.cpp" "utilities/Ray.cpp" "utilities/RGBColor.cpp" "utilities/ShadeInfo.cpp" "world/World.cpp" "world/ViewPlane.cpp" "lenses/Lens.cpp" -o main.exe
+g++ raytracer.cpp "cameras/Parallel.cpp" "cameras/Perspective.cpp" "geometry/Sphere.cpp" "geometry/Triangle.cpp" "geometry/Plane.cpp" "geometry/Geometry.cpp" "materials/Cosine.cpp" "samplers/Sampler.cpp" "samplers/Simple.cpp" "utilities/BBox.cpp" "utilities/helpers.cpp" "utilities/Image.cpp" "utilities/Point3D.cpp" "utilities/Vector3D.cpp" "utilities/Ray.cpp" "utilities/RGBColor.cpp" "utilities/ShadeInfo.cpp" "world/World.cpp" "world/ViewPlane.cpp" "lenses/Lens.cpp" "lights/Light.cpp" -o main.exe
 ```
 Finally, execute `main.exe` to run the raytracer.
