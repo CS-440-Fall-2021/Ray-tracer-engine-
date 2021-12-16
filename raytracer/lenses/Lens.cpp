@@ -16,8 +16,8 @@ Lens::Lens(const Point3D origin, const Vector3D normal, const float radius) {
     this->normal = normal;
     this->radius = radius;
 
-    radius_distribution = std::uniform_real_distribution<float>(0, radius);
-    angle_distribution = std::uniform_int_distribution<int>(0, 359);
+    radius_distribution = std::uniform_real_distribution<float>(0, radius + 1);
+    angle_distribution = std::uniform_int_distribution<int>(0, 360);
 }
 
 Point3D Lens::get_random_point() {
@@ -28,7 +28,7 @@ Point3D Lens::get_random_point() {
     float r = radius_distribution(radius_generator);
     int theta = angle_distribution(angle_generator);
 
-    return Point3D(origin.x + (radius * cos(theta)), origin.y + (radius * sin(theta)), origin.z);
+    return Point3D(origin.x + (r * cos(theta)), origin.y + (r * sin(theta)), origin.z);
 }
 
 Vector3D Lens::get_direction(const Point3D &p) {
