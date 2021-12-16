@@ -45,10 +45,10 @@ void World::build() {
   // View plane  .
   vplane.top_left.x = -15;
   vplane.top_left.y = 15;
-  vplane.top_left.z = -10;
+  vplane.top_left.z = -50;
   vplane.bottom_right.x = 15;
   vplane.bottom_right.y = -15;
-  vplane.bottom_right.z = -10;
+  vplane.bottom_right.z = -50;
   vplane.hres = 400;
   vplane.vres = 400;
 
@@ -60,13 +60,29 @@ void World::build() {
   sampler_ptr = new Simple(camera_ptr, &vplane);
 	
   // sphere
-  Sphere* sphere_ptr = new Sphere(Point3D(0, 0, -15), 5);
+  Sphere* sphere_ptr = new Sphere(Point3D(-10, 0, -55), 5);
   sphere_ptr->set_material(new Cosine(red));
   add_geometry(sphere_ptr);
 
-  Sphere* sphere_ptr_2 = new Sphere(Point3D(12, 12, -15), 5);
+  Sphere* sphere_ptr_2 = new Sphere(Point3D(10, 0, -70), 5);
   sphere_ptr_2->set_material(new Cosine(blue));
   add_geometry(sphere_ptr_2);
+
+  Plane *back = new Plane(Point3D(0, 0, -90), Vector3D(0, 0, 1));
+  Plane *bottom = new Plane(Point3D(0, -10, 0), Vector3D(0, 1, 0));
+
+  back->set_material(new Cosine(white));
+  bottom->set_material(new Cosine(RGBColor(0.5, 0.5, 0.5)));
+
+  add_geometry(back);
+  add_geometry(bottom);
+
+  // Point3D a(-5, 0, -55);
+  // Point3D b(5, 0, -55);
+  // Point3D c(0, 5, -55);
+  // Triangle* tri_ptr = new Triangle(a, b, c);
+  // tri_ptr->set_material(new Cosine(blue));
+  // add_geometry(tri_ptr);
 }
 
 ShadeInfo World::hit_objects(const Ray &ray) {

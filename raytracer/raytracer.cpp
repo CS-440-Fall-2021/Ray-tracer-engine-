@@ -20,7 +20,8 @@
 auto start = std::chrono::high_resolution_clock::now();
 
 // Simulation Parameters
-const int NPR = 100; // Number of primary rays
+int NPR = 1000; // Number of primary rays
+const bool blur = true;
 
 int main(int argc, char **argv)
 {
@@ -30,9 +31,9 @@ int main(int argc, char **argv)
 
   Sampler *sampler = world.sampler_ptr;
   ViewPlane &viewplane = world.vplane;
-  Plane focal_plane(Point3D(0, 0, -15), Vector3D(0, 0, 1));
+  Plane focal_plane(Point3D(0, 0, -70), Vector3D(0, 0, 1));
   Image image(viewplane);
-  Lens lens(Point3D(0, 0, 0), Vector3D(0, 0, 1), 30.0);
+  Lens lens(Point3D(0, 0, 0), Vector3D(0, 0, 1), 5.0);
 
 
   // std::cout << "Focal plane at: " + focal_plane.to_string() + "\n";
@@ -70,13 +71,25 @@ int main(int argc, char **argv)
       // where Pi is a random point on the lens
 
       // std::cout << "Generating Primary Rays...\n";
+      if (!blur) {
+        NPR = 1;
+      }
+      
       for (int i = 0; i < NPR; i++)
       {
-        Point3D origin = lens.get_random_point();
+        Point3D origin;
+        
+        if (blur) {
+          origin = lens.get_random_point();
+        } else {
+          origin = lens.origin;
+        }
+
         Vector3D direction = (Pf - origin);
 
         Ray r(origin, direction);
-        r.w = 1.0 / NPR;
+        // r.w = (1.0 / NPR) * (lens.radius - (lens.origin.distance(origin))) / lens.radius;
+        r.w = (1.0 / NPR);
 
         // if (i == 4) {
         //   std::cout << "Primary Ray #5:\n" + r.to_string() + "\n";
@@ -113,7 +126,13 @@ int main(int argc, char **argv)
   std::cout << "Raytracing complete.\n";
 
   // Write image to file.
-  std::string filename = "scene_" + std::to_string(NPR) + "_uniform_random_r" + std::to_string((int)lens.radius) + ".ppm";
+  float lens_to_vp = lens.origin.z - viewplane.top_left.z;
+  std::string filename;
+  if (blur) {
+    filename = std::to_string(viewplane.hres) + "x" + std::to_string(viewplane.vres) + " - blur - " + std::to_string(NPR) + "NPR - URD - r" + std::to_string((int)lens.radius) + " - lens depth" +  std::to_string((int)lens_to_vp) + ".ppm";
+  } else {
+    filename = std::to_string(viewplane.hres) + "x" + std::to_string(viewplane.vres) + " - no blur - " + std::to_string(NPR) + "NPR - URD - r" + std::to_string((int)lens.radius) + " - lens depth" +  std::to_string((int)lens_to_vp) + ".ppm";
+  }
   image.write_ppm(filename);
 
   std::cout << "Wrote image.\n";
