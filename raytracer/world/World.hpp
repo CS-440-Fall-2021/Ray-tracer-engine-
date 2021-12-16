@@ -22,6 +22,7 @@ class Ray;
 class Sampler;
 class ShadeInfo;
 class Lens;
+class Light;
 
 class World {
 public:
@@ -31,6 +32,7 @@ public:
   Camera *camera_ptr;
   Sampler *sampler_ptr;
   Lens *lens_ptr;
+  std::vector<Light *> lights;
 
 public:
   // Constructors.
@@ -41,6 +43,8 @@ public:
 
   // Add to the scene.
   void add_geometry(Geometry *geom_ptr);
+  void add_light(Light *light_ptr);
+
   void set_camera(Camera *c_ptr);
   void set_lens(Lens *l_ptr);
 
