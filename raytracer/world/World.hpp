@@ -21,6 +21,7 @@ class Geometry;
 class Ray;
 class Sampler;
 class ShadeInfo;
+class Lens;
 
 class World {
 public:
@@ -29,6 +30,7 @@ public:
   std::vector<Geometry *> geometry;
   Camera *camera_ptr;
   Sampler *sampler_ptr;
+  Lens *lens_ptr;
 
 public:
   // Constructors.
@@ -40,6 +42,7 @@ public:
   // Add to the scene.
   void add_geometry(Geometry *geom_ptr);
   void set_camera(Camera *c_ptr);
+  void set_lens(Lens *l_ptr);
 
   // Build scene - add all geometry, materials, lights, viewplane, camera,
   // samplers, and acceleration structures

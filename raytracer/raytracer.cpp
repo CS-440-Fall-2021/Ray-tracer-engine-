@@ -31,9 +31,9 @@ int main(int argc, char **argv)
 
   Sampler *sampler = world.sampler_ptr;
   ViewPlane &viewplane = world.vplane;
-  Plane focal_plane(Point3D(0, 0, -70), Vector3D(0, 0, 1));
   Image image(viewplane);
-  Lens lens(Point3D(0, 0, 0), Vector3D(0, 0, 1), 5.0);
+  Lens *lens = world.lens_ptr;
+  Plane &focal_plane = world.lens_ptr->focal_plane;
 
 
   // std::cout << "Focal plane at: " + focal_plane.to_string() + "\n";
@@ -80,9 +80,9 @@ int main(int argc, char **argv)
         Point3D origin;
         
         if (blur) {
-          origin = lens.get_random_point();
+          origin = lens->get_random_point();
         } else {
-          origin = lens.origin;
+          origin = lens->origin;
         }
 
         Vector3D direction = (Pf - origin);
@@ -126,12 +126,12 @@ int main(int argc, char **argv)
   std::cout << "Raytracing complete.\n";
 
   // Write image to file.
-  float lens_to_vp = lens.origin.z - viewplane.top_left.z;
+  float lens_to_vp = lens->origin.z - viewplane.top_left.z;
   std::string filename;
   if (blur) {
-    filename = std::to_string(viewplane.hres) + "x" + std::to_string(viewplane.vres) + " - blur - " + std::to_string(NPR) + "NPR - URD - r" + std::to_string((int)lens.radius) + " - lens depth" +  std::to_string((int)lens_to_vp) + ".ppm";
+    filename = std::to_string(viewplane.hres) + "x" + std::to_string(viewplane.vres) + " - blur - " + std::to_string(NPR) + "NPR - URD - r" + std::to_string((int)lens->radius) + " - lens depth" +  std::to_string((int)lens_to_vp) + ".ppm";
   } else {
-    filename = std::to_string(viewplane.hres) + "x" + std::to_string(viewplane.vres) + " - no blur - " + std::to_string(NPR) + "NPR - URD - r" + std::to_string((int)lens.radius) + " - lens depth" +  std::to_string((int)lens_to_vp) + ".ppm";
+    filename = std::to_string(viewplane.hres) + "x" + std::to_string(viewplane.vres) + " - no blur - " + std::to_string(NPR) + "NPR - URD - r" + std::to_string((int)lens->radius) + " - lens depth" +  std::to_string((int)lens_to_vp) + ".ppm";
   }
   image.write_ppm(filename);
 

@@ -6,15 +6,17 @@ Lens::Lens() {
     origin = Point3D(0, 0, 0);
     normal = Vector3D(0, 0, 1);
     radius = 5;
+    focal_plane = Plane(Point3D(0, 0, -25), Vector3D(0, 0, 1));
 
     radius_distribution = std::uniform_real_distribution<float>(0, 99);
     angle_distribution = std::uniform_int_distribution<int>(0, 359);
 }
 
-Lens::Lens(const Point3D origin, const Vector3D normal, const float radius) {
+Lens::Lens(const Point3D &origin, const Vector3D &normal, const float radius, const Plane &fp) {
     this->origin = origin;
     this->normal = normal;
     this->radius = radius;
+    this->focal_plane = fp;
 
     radius_distribution = std::uniform_real_distribution<float>(0, radius + 1);
     angle_distribution = std::uniform_int_distribution<int>(0, 360);

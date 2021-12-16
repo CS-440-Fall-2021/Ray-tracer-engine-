@@ -8,6 +8,7 @@
 #include "../samplers/Simple.hpp"
 #include "../utilities/Constants.hpp"
 #include "../utilities/ShadeInfo.hpp"
+#include "../lenses/Lens.hpp"
 
 #include <map>
 #include <iostream>
@@ -41,6 +42,10 @@ void World::set_camera(Camera *c_ptr) {
   camera_ptr = c_ptr;
 }
 
+void World::set_lens(Lens *l_ptr) {
+  lens_ptr = l_ptr;
+}
+
 void World::build() {
   // View plane  .
   vplane.top_left.x = -15;
@@ -55,9 +60,18 @@ void World::build() {
   // Background color.  
   bg_color = black;
   
-  // Camera and sampler.
-  set_camera(new Perspective(0, 0, 20));
-  sampler_ptr = new Simple(camera_ptr, &vplane);
+  // Lens and sampler.
+  Point3D lens_origin(0, 0, 0);
+  Vector3D lens_normal(0, 0, 1);
+  float lens_radius = 5.0;
+  
+  Point3D fp_origin(0, 0, -70);
+  Vector3D fp_normal(0, 0, 1);
+
+  Plane fp(fp_origin, fp_normal);
+
+  set_lens(new Lens(lens_origin, lens_normal, lens_radius, fp));
+  sampler_ptr = new Simple(lens_ptr, &vplane);
 	
   // sphere
   Sphere* sphere_ptr = new Sphere(Point3D(-10, 0, -55), 5);
