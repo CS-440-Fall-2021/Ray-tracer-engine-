@@ -12,6 +12,7 @@
 
 #include <map>
 #include <iostream>
+#include <algorithm>
 
 
 World::World() {
@@ -37,7 +38,7 @@ World::~World() {
   free(lens_ptr);
 }
 
-void World::add_geometry(Geometry* geom_ptr, bool is_wall=false) {
+void World::add_geometry(Geometry* geom_ptr, bool is_wall) {
   if (is_wall) {
     walls.push_back(geom_ptr);
   }
@@ -83,7 +84,19 @@ void World::build() {
   set_lens(new Lens(lens_origin, lens_normal, lens_radius, fp));
   sampler_ptr = new Simple(lens_ptr, &vplane);
 
-  // sphere
+  // Lights
+  Point3D light1_origin(-10, 20, -55);
+  Vector3D light1_normal(0, -1, 0);
+  float light1_fol = 90;
+
+  Point3D light2_origin(10, 20, -70);
+  Vector3D light2_normal(0, -1, 0);
+  float light2_fol = 90;
+
+  add_light(new Light(light1_origin, light1_normal, light1_fol));
+  add_light(new Light(light2_origin, light2_normal, light2_fol));
+
+  // Geometry
   Sphere* sphere_ptr = new Sphere(Point3D(-10, 0, -55), 5);
   sphere_ptr->set_material(new Cosine(red));
   add_geometry(sphere_ptr);
@@ -96,10 +109,10 @@ void World::build() {
   Plane* bottom = new Plane(Point3D(0, -10, 0), Vector3D(0, 1, 0));
 
   back->set_material(new Cosine(white));
-  bottom->set_material(new Cosine(RGBColor(0.5, 0.5, 0.5)));
+  bottom->set_material(new Cosine(RGBColor(0.75, 0.75, 0.75)));
 
-  add_geometry(back);
-  add_geometry(bottom);
+  add_geometry(back, true);
+  add_geometry(bottom, true);
 
   // Point3D a(-5, 0, -55);
   // Point3D b(5, 0, -55);
@@ -109,7 +122,7 @@ void World::build() {
   // add_geometry(tri_ptr);
 }
 
-ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls=true) {
+ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
   bool hit = false; // to keep track of whether a hit happened or not
   float t = 0; // represents a point on the ray
   ShadeInfo s(*this);

@@ -109,8 +109,10 @@ int main(int argc, char **argv)
         
         if (sinfo.hit)
         {
-          // std::cout << "raytracer.cpp:99 - Primary ray hit at: " + sinfo.hit_point.to_string() + "\n";
-          pixel_color += weight * sinfo.material_ptr->shade(sinfo);
+          // TODO: cast shadow ray
+          float light_val = world.get_light_value(sinfo.hit_point);
+
+          pixel_color += light_val * weight * sinfo.material_ptr->shade(sinfo);
         }
         else
         {
