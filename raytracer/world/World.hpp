@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "../utilities/RGBColor.hpp"
+#include "../lights/Light.hpp"
 
 #include "ViewPlane.hpp"
 
@@ -22,13 +23,13 @@ class Ray;
 class Sampler;
 class ShadeInfo;
 class Lens;
-class Light;
 
 class World {
 public:
   ViewPlane vplane;
   RGBColor bg_color;
   std::vector<Geometry *> geometry;
+  std::vector<Geometry *> walls;
   Camera *camera_ptr;
   Sampler *sampler_ptr;
   Lens *lens_ptr;
@@ -42,7 +43,7 @@ public:
   ~World(); // free memory.
 
   // Add to the scene.
-  void add_geometry(Geometry *geom_ptr);
+  void add_geometry(Geometry *geom_ptr, bool is_wall=false);
   void add_light(Light *light_ptr);
 
   void set_camera(Camera *c_ptr);
@@ -54,5 +55,10 @@ public:
 
   // Returns appropriate shading information corresponding to intersection of
   // the ray with the scene geometry.
-  ShadeInfo hit_objects(const Ray &ray);
+  ShadeInfo hit_objects(const Ray &ray, bool hit_walls=true);
+
+  // Returns a float in [0, 1] corresponding to how much light hits the passed
+  // hit_point.
+  // For example: if 3/4 lights illuminate hit_point, return value will be 0.75.
+  float get_light_value(const Point3D &hit_point);
 };

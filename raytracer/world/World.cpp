@@ -37,7 +37,10 @@ World::~World() {
   free(lens_ptr);
 }
 
-void World::add_geometry(Geometry* geom_ptr) {
+void World::add_geometry(Geometry* geom_ptr, bool is_wall=false) {
+  if (is_wall) {
+    walls.push_back(geom_ptr);
+  }
   geometry.push_back(geom_ptr);
 }
 
@@ -106,7 +109,7 @@ void World::build() {
   // add_geometry(tri_ptr);
 }
 
-ShadeInfo World::hit_objects(const Ray& ray) {
+ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls=true) {
   bool hit = false; // to keep track of whether a hit happened or not
   float t = 0; // represents a point on the ray
   ShadeInfo s(*this);
@@ -116,6 +119,12 @@ ShadeInfo World::hit_objects(const Ray& ray) {
 
 
   for (auto geo_obj : geometry) {
+    if (!hit_walls) {
+      if (std::count(walls.begin(), walls.end(), geo_obj) != 0) {
+        continue;
+      }
+    }
+
     hit = geo_obj->hit(ray, t, s);
 
     if (hit == true && t <= t_min) {
@@ -124,4 +133,27 @@ ShadeInfo World::hit_objects(const Ray& ray) {
     }
   }
   return s_min;
+}
+
+float World::get_light_value(const Point3D &hit_point) {
+  const int total_lights = lights.size();
+  const float ind_light_weight = 1.0 / total_lights;
+  float light_val = 0;
+
+  // For each light in the world, cast a shadow ray to it
+  // and see if the ray reaches or not.
+  for(Light *light : lights) {
+    
+    Vector3D dir = (light->origin - hit_point);
+    dir.normalize();
+    Ray shadow_ray(hit_point, dir);
+
+    ShadeInfo sinfo = hit_objects(shadow_ray, false);
+
+    if (sinfo.hit == false) {
+      light_val += ind_light_weight;
+    }
+  }
+
+  return light_val;
 }
