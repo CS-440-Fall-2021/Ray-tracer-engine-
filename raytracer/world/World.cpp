@@ -9,6 +9,7 @@
 #include "../utilities/Constants.hpp"
 #include "../utilities/ShadeInfo.hpp"
 #include "../lenses/Lens.hpp"
+#include "../utilities/BBox.hpp"
 
 #include <map>
 #include <iostream>
@@ -120,6 +121,19 @@ void World::build() {
   Triangle* tri_ptr = new Triangle(a, b, c);
   tri_ptr->set_material(new Cosine(blue));
   add_geometry(tri_ptr);
+
+  this->addBBoxes();
+}
+
+void World::addBBoxes(){
+  std::vector<BBox*> BBoxes; 
+  for (auto geo_obj : geometry){
+    BBox temp = geo_obj->getBBox();
+    BBoxes.push_back(&temp);
+  }
+  
+  this->Worldbox = BBox::extend(BBoxes);
+
 }
 
 ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {

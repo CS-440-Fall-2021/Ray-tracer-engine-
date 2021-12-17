@@ -9,16 +9,14 @@ BBox::BBox(const Point3D &min, const Point3D &max, const Geometry *g) {
     pmin = min;
     pmax = max;
     if (g!= NULL){
-        geometrylist.push_back(g);
+        geometry_child= g;
     }
 }
 BBox::BBox(const Point3D &min, const Point3D &max) {
     pmin = min;
     pmax = max;
-
+    geometry_child = NULL;
 }
-
-
 
 std::string BBox::to_string() const {
     std::string result = "pmin: " + pmin.to_string() + "\n" + "pmax: " +  pmax.to_string();
@@ -76,25 +74,32 @@ void BBox::extend(Geometry *g) {
     BBox newbox = g->getBBox();
     this->pmax = max(this->pmax, newbox.pmax);
     this->pmin = min(this->pmin,newbox.pmin);
-    geometrylist.push_back(g);
-
+    
 }
 
-void BBox::extend(const BBox& b){
-    this->pmax = max(this->pmax,b.pmax);
-    this->pmin = min(this->pmin,b.pmin);
-    int size_given = sizeof(b.geometrylist)/sizeof(b.geometrylist[0]);
-    int size_exist = sizeof(this->geometrylist)/sizeof(this->geometrylist[0]);
-    std::vector<const Geometry *> mixed(size_exist+size_given);
-    std::vector<const Geometry *>::iterator it;
-
-    it=set_union (this->geometrylist.begin(), this->geometrylist.end(), b.geometrylist.begin(), b.geometrylist.end(), mixed.begin());
-
-    mixed.resize(it-mixed.begin()); 
-    this->geometrylist = mixed;
-
+BBox BBox::extend(const BBox& b){
+    BBox newbox;
+    newbox.pmax = max(this->pmax,b.pmax);
+    newbox.pmin = min(this->pmin,b.pmin);
+    newbox.children.push_back(&b);
+    newbox.children.push_back(this);
+    return newbox;
 }
 
+BBox BBox::extend(std::vector<BBox*> BBoxes){
+    Point3D minpoint=BBoxes[0]->pmin;
+    Point3D maxpoint=BBoxes[0]->pmax;
+    BBox Worldbox;
+    for(auto box : BBoxes){
+        minpoint = min(box->pmin,minpoint);
+        maxpoint = max(box->pmax,maxpoint);
+        Worldbox.children.push_back(box);
+    }
+    Worldbox.pmin = minpoint;
+    Worldbox.pmax = maxpoint;
+
+    return Worldbox;
+}
 bool BBox::contains(const Point3D &p){
     if (p.x>= pmin.x && p.x <= pmax.x &&
         p.y>= pmin.y && p.y <= pmax.y &&

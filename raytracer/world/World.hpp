@@ -14,6 +14,7 @@
 
 #include "../utilities/RGBColor.hpp"
 #include "../lights/Light.hpp"
+#include "../utilities/BBox.hpp"
 
 #include "ViewPlane.hpp"
 
@@ -23,6 +24,7 @@ class Ray;
 class Sampler;
 class ShadeInfo;
 class Lens;
+class BBox;
 
 class World {
 public:
@@ -34,6 +36,7 @@ public:
   Sampler *sampler_ptr;
   Lens *lens_ptr;
   std::vector<Light *> lights;
+  BBox Worldbox;
 
 public:
   // Constructors.
@@ -61,4 +64,7 @@ public:
   // hit_point.
   // For example: if 3/4 lights illuminate hit_point, return value will be 0.75.
   float get_light_value(const Point3D &hit_point);
+
+  void addBBoxes();
 };
+
