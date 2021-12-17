@@ -77,7 +77,7 @@ bool Triangle::hit(const Ray &ray, float &t, ShadeInfo &s) const{
     //if they do intersect
     else{
         //calculating t
-        intersect = -((Vector3D(ray.o) * normal)+ Vector3D(v0)*normal)/(ray.d * normal);
+        intersect = ((Vector3D(ray.o) * normal)+ Vector3D(v0)*normal)/(ray.d * normal);
         
         //if intersection happened behind the ray
         if (intersect <= 0){
