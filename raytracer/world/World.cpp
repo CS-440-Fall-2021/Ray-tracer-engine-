@@ -114,12 +114,12 @@ void World::build() {
   add_geometry(back, true);
   add_geometry(bottom, true);
 
-  // Point3D a(-5, 0, -55);
-  // Point3D b(5, 0, -55);
-  // Point3D c(0, 5, -55);
-  // Triangle* tri_ptr = new Triangle(a, b, c);
-  // tri_ptr->set_material(new Cosine(blue));
-  // add_geometry(tri_ptr);
+  Point3D a(-5, 0, -55);
+  Point3D b(5, 0, -55);
+  Point3D c(0, 5, -55);
+  Triangle* tri_ptr = new Triangle(a, b, c);
+  tri_ptr->set_material(new Cosine(blue));
+  add_geometry(tri_ptr);
 }
 
 ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {

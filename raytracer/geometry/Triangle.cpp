@@ -94,9 +94,9 @@ bool Triangle::hit(const Ray &ray, float &t, ShadeInfo &s) const{
 
         //if point of intersection inside triangle
         if (intersect > 0 && 
-                edge1 * point1 > 0 &&
-                edge2 * point2 > 0 &&
-                edge3 * point3 > 0){
+                normal * (edge1 ^ point1) > 0 &&
+                normal * (edge2 ^ point2) > 0 &&
+                normal * (edge3 ^ point3) > 0){
             t = intersect;
             s.hit = true;
             s.hit_point = point;
