@@ -77,12 +77,13 @@ void BBox::extend(Geometry *g) {
     
 }
 
-BBox BBox::extend(const BBox& b){
+BBox BBox::extend( BBox& b){
     BBox newbox;
     newbox.pmax = max(this->pmax,b.pmax);
     newbox.pmin = min(this->pmin,b.pmin);
     newbox.children.push_back(&b);
     newbox.children.push_back(this);
+    newbox.geometry_child = NULL;
     return newbox;
 }
 
@@ -97,7 +98,7 @@ BBox BBox::extend(std::vector<BBox*> BBoxes){
     }
     Worldbox.pmin = minpoint;
     Worldbox.pmax = maxpoint;
-
+    Worldbox.geometry_child = NULL;
     return Worldbox;
 }
 bool BBox::contains(const Point3D &p){

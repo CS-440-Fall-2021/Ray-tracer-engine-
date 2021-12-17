@@ -7,6 +7,7 @@
 */
 
 #include "Point3D.hpp"
+
 #include <stdio.h>
 #include <iostream>
 #include <vector>
@@ -20,7 +21,7 @@ public:
   Point3D pmin; // min coordinates.
   Point3D pmax; // max coordinates.
 
-  std::vector<const BBox *> children;
+  std::vector<BBox *> children;
   const Geometry* geometry_child;
 public:
   // Constructors.
@@ -43,11 +44,12 @@ public:
 
   // Extend this bbox, if necessary, to include g or b.
   void extend(Geometry* g);
-  BBox extend(const BBox& b);
+  BBox extend( BBox& b);
   static BBox extend(std::vector<BBox*> BBoxes);
   // Does this BBox contain p? True even when p lies on a boundary.
   bool contains(const Point3D& p);
-  
+
+
   // Does this BBox overlap with g or b?
   bool overlaps(Geometry* g);
   bool overlaps(const BBox& b);

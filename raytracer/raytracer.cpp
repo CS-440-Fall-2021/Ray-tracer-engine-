@@ -22,10 +22,10 @@ auto start = std::chrono::high_resolution_clock::now();
 // Simulation Parameters
 int NPR = 1000; // Number of primary rays
 const bool blur = true;
-
+int PROXIMITY_THRESHOLD = 20;
 int main(int argc, char **argv)
 {
-  World world;
+  World world(PROXIMITY_THRESHOLD);
   world.build();
   std::cout << "World built.\n";
 

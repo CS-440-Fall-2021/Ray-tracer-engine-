@@ -37,10 +37,11 @@ public:
   Lens *lens_ptr;
   std::vector<Light *> lights;
   BBox Worldbox;
+  float PROXIMITY_THRESHOLD;
 
 public:
   // Constructors.
-  World(); // initialize members.
+  World(float f); // initialize members.
 
   // Destructor.
   ~World(); // free memory.
@@ -66,5 +67,7 @@ public:
   float get_light_value(const Point3D &hit_point);
 
   void addBBoxes();
+
+  void cluster();
 };
 

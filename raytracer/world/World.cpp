@@ -16,8 +16,9 @@
 #include <algorithm>
 
 
-World::World() {
+World::World(float f) {
   // Feel free to override in World::build() as needed.
+  PROXIMITY_THRESHOLD = f;
   vplane.set_hres(640);
   vplane.set_vres(480);
   vplane.top_left = Point3D(-320, 240, 0);
@@ -121,8 +122,30 @@ void World::build() {
   Triangle* tri_ptr = new Triangle(a, b, c);
   tri_ptr->set_material(new Cosine(blue));
   add_geometry(tri_ptr);
-
+  
+  std::cout<<"Starting addBBoxes \n";
   this->addBBoxes();
+  std::cout<<"Ending addBBoxes\n";
+  
+  std::cout<<"Starting Cluster\n";
+  this->cluster();
+  std::cout<<"Ending Cluster\n";
+
+  std::cout<< "trying iter\n";
+  std::cout<< "Worldbox.children.size() :" + std::to_string(Worldbox.children.size())+ "\n";
+  for (auto child : Worldbox.children){
+    std::cout<< "im here\n";
+    if (child->geometry_child == NULL){
+      std::cout<< "a cluster is " + child->to_string()+"\n";
+      for (auto child2 : child->children){
+        std::cout<< "Cluster contains "+ child2->to_string()+ "\n";
+      }
+    }
+    else{
+      std::cout<< "box is " + child->to_string()+ "\n";
+      std::cout<< "box contains shape " + child->geometry_child->to_string()+ "\n";
+    }
+  }
 }
 
 void World::addBBoxes(){
@@ -134,6 +157,48 @@ void World::addBBoxes(){
   
   this->Worldbox = BBox::extend(BBoxes);
 
+}
+
+void World::cluster(){
+  std::vector<BBox *> result;
+  std::vector<BBox *> done;
+  std::cout<< "Worldbox.children.size() :" + std::to_string(Worldbox.children.size())+ "\n";
+  for (auto current : this->Worldbox.children){
+    bool flag = false;
+    for(auto check : this->Worldbox.children){
+      if(std::count(done.begin(), done.end(), current) > 0 ){
+        break;
+      }
+
+      if((std::count(done.begin(), done.end(), check) > 0)||
+        (current->to_string() == check->to_string())){
+        flag = true;
+        continue;
+      }
+      std::cout<<"KUCH";
+      Point3D midcurrent = Point3D((current->pmin.x + current->pmax.x)* 0.5,(current->pmin.y + current->pmax.y)* 0.5,(current->pmin.z + current->pmax.z)* 0.5);
+      Point3D midcheck = Point3D((check->pmin.x + check->pmax.x)* 0.5,(check->pmin.y + check->pmax.y)* 0.5,(check->pmin.z + check->pmax.z)* 0.5);
+
+      float distance = (midcheck-midcurrent).length();
+      if (distance <= PROXIMITY_THRESHOLD){
+        BBox temp = current->extend(*check);
+        result.push_back(&temp);
+        done.push_back(current);
+        done.push_back(check);
+        flag = true;
+      }
+
+    }
+    if (flag == false){
+      done.push_back(current);
+      result.push_back(current);
+    }
+    else{
+      done.push_back(current);
+    }
+  }
+  std::cout<< "result.size(): "+ std::to_string(result.size())+ "\n";
+  this->Worldbox.children = result;
 }
 
 ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
