@@ -5,6 +5,7 @@
 #include "../geometry/Sphere.hpp"
 #include "../geometry/Triangle.hpp"
 #include "../materials/Cosine.hpp"
+#include "../materials/Wall.hpp"
 #include "../samplers/Simple.hpp"
 #include "../utilities/Constants.hpp"
 #include "../utilities/ShadeInfo.hpp"
@@ -112,11 +113,11 @@ void World::build() {
   Plane* right = new Plane(Point3D(20, 0, 0), Vector3D(-1, 0, 0));
   Plane* top = new Plane(Point3D(0, 21, 0), Vector3D(0, -1, 0));
 
-  back->set_material(new Cosine(white));
-  bottom->set_material(new Cosine(RGBColor(0.95, 0.95, 0.95)));
-  left->set_material(new Cosine(white));
-  right->set_material(new Cosine(white));
-  top->set_material(new Cosine(white));
+  back->set_material(new Wall(white));
+  bottom->set_material(new Wall(RGBColor(0.95, 0.95, 0.95)));
+  left->set_material(new Wall(white));
+  right->set_material(new Wall(white));
+  top->set_material(new Wall(white));
 
   add_geometry(back, true);
   add_geometry(bottom, true);
