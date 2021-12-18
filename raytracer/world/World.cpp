@@ -14,7 +14,7 @@
 #include <map>
 #include <iostream>
 #include <algorithm>
-
+#include <cmath>
 
 World::World(float f) {
   // Feel free to override in World::build() as needed.
@@ -98,14 +98,20 @@ void World::build() {
   add_light(new Light(light1_origin, light1_normal, light1_fol));
   add_light(new Light(light2_origin, light2_normal, light2_fol));
 
+  std::vector<BBox*> BBoxes; 
   // Geometry
   Sphere* sphere_ptr = new Sphere(Point3D(-10, 0, -55), 5);
   sphere_ptr->set_material(new Cosine(red));
   add_geometry(sphere_ptr);
+  BBox* b1 = new BBox(sphere_ptr->getBBox());
+  BBoxes.push_back(b1);
+
 
   Sphere* sphere_ptr_2 = new Sphere(Point3D(10, 0, -70), 5);
   sphere_ptr_2->set_material(new Cosine(blue));
   add_geometry(sphere_ptr_2);
+  BBox* b2 = new BBox(sphere_ptr_2->getBBox());
+  BBoxes.push_back(b2);
 
   Plane* back = new Plane(Point3D(0, 0, -90), Vector3D(0, 0, 1));
   Plane* bottom = new Plane(Point3D(0, -10, 0), Vector3D(0, 1, 0));
@@ -114,7 +120,12 @@ void World::build() {
   bottom->set_material(new Cosine(RGBColor(0.75, 0.75, 0.75)));
 
   add_geometry(back, true);
+  BBox* b3 = new BBox(back->getBBox());
+  BBoxes.push_back(b3);
+
   add_geometry(bottom, true);
+  BBox* b4 = new BBox(bottom->getBBox());
+  BBoxes.push_back(b4);
 
   Point3D a(-5, 0, -55);
   Point3D b(5, 0, -55);
@@ -122,84 +133,143 @@ void World::build() {
   Triangle* tri_ptr = new Triangle(a, b, c);
   tri_ptr->set_material(new Cosine(blue));
   add_geometry(tri_ptr);
-  
-  std::cout<<"Starting addBBoxes \n";
-  this->addBBoxes();
-  std::cout<<"Ending addBBoxes\n";
-  
-  std::cout<<"Starting Cluster\n";
-  this->cluster();
-  std::cout<<"Ending Cluster\n";
+  BBox* b5 = new BBox(tri_ptr->getBBox());
+  BBoxes.push_back(b5);
 
-  std::cout<< "trying iter\n";
-  std::cout<< "Worldbox.children.size() :" + std::to_string(Worldbox.children.size())+ "\n";
-  for (auto child : Worldbox.children){
-    std::cout<< "im here\n";
-    if (child->geometry_child == NULL){
-      std::cout<< "a cluster is " + child->to_string()+"\n";
-      for (auto child2 : child->children){
-        std::cout<< "Cluster contains "+ child2->to_string()+ "\n";
-      }
-    }
-    else{
-      std::cout<< "box is " + child->to_string()+ "\n";
-      std::cout<< "box contains shape " + child->geometry_child->to_string()+ "\n";
-    }
-  }
-}
-
-void World::addBBoxes(){
-  std::vector<BBox*> BBoxes; 
-  for (auto geo_obj : geometry){
-    BBox temp = geo_obj->getBBox();
-    BBoxes.push_back(&temp);
-  }
-  
   this->Worldbox = BBox::extend(BBoxes);
+  
+  Vector3D size_of_world = this->Worldbox.pmax - this->Worldbox.pmin;
+  
+  int Total_primitives = geometry.size();
+  float Croot = std::pow(5*Total_primitives/(size_of_world.x * size_of_world.y *size_of_world.z), 1/3);
 
-}
+  Vector3D Resolution = Point3D(
+    std::floor(size_of_world.x* Croot),
+    std::floor(size_of_world.y* Croot),
+    std::floor(size_of_world.z* Croot)
+  );
 
-void World::cluster(){
-  std::vector<BBox *> result;
-  std::vector<BBox *> done;
-  std::cout<< "Worldbox.children.size() :" + std::to_string(Worldbox.children.size())+ "\n";
-  for (auto current : this->Worldbox.children){
-    bool flag = false;
-    for(auto check : this->Worldbox.children){
-      if(std::count(done.begin(), done.end(), current) > 0 ){
-        break;
+  Resolution = Point3D(
+    std::max(double(1),std::min(Resolution.x,double(128))),
+    std::max(double(1),std::min(Resolution.y,double(128))),
+    std::max(double(1),std::min(Resolution.z,double(128)))
+  );
+  
+  Vector3D celldim = Vector3D(
+    size_of_world.x / Resolution.x ,
+    size_of_world.y / Resolution.y ,
+    size_of_world.z / Resolution.z 
+  );
+  
+  this->num_rows = Resolution.x * Resolution.y * Resolution.z;
+
+  this->Grid = new std::vector<Geometry *>[this->num_rows];
+
+  for (auto geo : geometry){
+    
+    BBox temp = geo->getBBox();
+    
+    Point3D min = temp.pmin;
+    Point3D max = temp.pmax;
+    
+    min = Point3D(
+      (min.x-this->Worldbox.pmin.x)/celldim.x,
+      (min.y-this->Worldbox.pmin.y)/celldim.y,
+      (min.z- this->Worldbox.pmin.z)/celldim.z
+    );
+    
+    max = Point3D(
+      (max.x-this->Worldbox.pmin.x)/celldim.x,
+      (max.y-this->Worldbox.pmin.y)/celldim.y,
+      (max.z- this->Worldbox.pmin.z)/celldim.z
+    );
+    
+  
+    int zmin = std::min(std::max(std::floor(min.z),float(0)),float(Resolution.z -1));
+    int zmax = std::min(std::max(std::floor(max.z),float(0)),float(Resolution.z -1));
+    int ymin = std::min(std::max(std::floor(min.y),float(0)),float(Resolution.y -1));
+    int ymax = std::min(std::max(std::floor(max.y),float(0)),float(Resolution.y -1));
+    int xmin = std::min(std::max(std::floor(min.x),float(0)),float(Resolution.x -1));
+    int xmax = std::min(std::max(std::floor(max.x),float(0)),float(Resolution.x -1));
+    
+
+    for (int z = zmin; z<=zmax; ++z){
+      for(int y= ymin; y<=ymax; ++y){
+        for(int x= xmin; x<=xmax; ++x){
+
+          int pos = z * Resolution.x * Resolution.y + y * Resolution.x + x;
+          std::cout << "pos is:" +std::to_string(pos)+"\n";
+          this->Grid[pos] .push_back(geo);
+          std::cout<< "pushed\n";
+        }
       }
-
-      if((std::count(done.begin(), done.end(), check) > 0)||
-        (current->to_string() == check->to_string())){
-        flag = true;
-        continue;
-      }
-      std::cout<<"KUCH";
-      Point3D midcurrent = Point3D((current->pmin.x + current->pmax.x)* 0.5,(current->pmin.y + current->pmax.y)* 0.5,(current->pmin.z + current->pmax.z)* 0.5);
-      Point3D midcheck = Point3D((check->pmin.x + check->pmax.x)* 0.5,(check->pmin.y + check->pmax.y)* 0.5,(check->pmin.z + check->pmax.z)* 0.5);
-
-      float distance = (midcheck-midcurrent).length();
-      if (distance <= PROXIMITY_THRESHOLD){
-        BBox temp = current->extend(*check);
-        result.push_back(&temp);
-        done.push_back(current);
-        done.push_back(check);
-        flag = true;
-      }
-
-    }
-    if (flag == false){
-      done.push_back(current);
-      result.push_back(current);
-    }
-    else{
-      done.push_back(current);
-    }
+    }    
   }
-  std::cout<< "result.size(): "+ std::to_string(result.size())+ "\n";
-  this->Worldbox.children = result;
+
+    for (int i=0; i< num_rows; i= i +1){
+      for (auto geo_obj : this->Grid[i]){
+        if (geo_obj != NULL){
+          std::cout<< "A Shape in row: "+ std::to_string(i) + "is " + geo_obj->to_string()+ "\n";
+        }
+      }
+    }
 }
+
+// void World::addBBoxes(){
+//   std::vector<BBox*> BBoxes; 
+//   for (auto geo_obj : geometry){
+//     std::cout<< "Geometry is :" + geo_obj->to_string()+"\n";
+//     BBox temporary = geo_obj->getBBox();
+//     std::cout<< "BBox is :" + temporary.to_string()+"\n";
+    
+//     BBoxes.push_back(&temporary);
+//   }
+  
+//   this->Worldbox = BBox::extend(BBoxes);
+
+// }
+
+// void World::cluster(){
+//   std::vector<BBox *> result;
+//   std::vector<BBox *> done;
+//   std::cout<< "Worldbox.children.size() :" + std::to_string(Worldbox.children.size())+ "\n";
+//   for (auto current : this->Worldbox.children){
+//     bool flag = false;
+//     for(auto check : this->Worldbox.children){
+//       if(std::count(done.begin(), done.end(), current) > 0 ){
+//         break;
+//       }
+
+//       if((std::count(done.begin(), done.end(), check) > 0)||
+//         (current->to_string() == check->to_string())){
+//         flag = true;
+//         continue;
+//       }
+//       std::cout<<"KUCH";
+//       Point3D midcurrent = Point3D((current->pmin.x + current->pmax.x)* 0.5,(current->pmin.y + current->pmax.y)* 0.5,(current->pmin.z + current->pmax.z)* 0.5);
+//       Point3D midcheck = Point3D((check->pmin.x + check->pmax.x)* 0.5,(check->pmin.y + check->pmax.y)* 0.5,(check->pmin.z + check->pmax.z)* 0.5);
+
+//       float distance = (midcheck-midcurrent).length();
+//       if (distance <= PROXIMITY_THRESHOLD){
+//         BBox temp = current->extend(*check);
+//         result.push_back(&temp);
+//         done.push_back(current);
+//         done.push_back(check);
+//         flag = true;
+//       }
+
+//     }
+//     if (flag == false){
+//       done.push_back(current);
+//       result.push_back(current);
+//     }
+//     else{
+//       done.push_back(current);
+//     }
+//   }
+//   std::cout<< "result.size(): "+ std::to_string(result.size())+ "\n";
+//   this->Worldbox.children = result;
+// }
 
 ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
   bool hit = false; // to keep track of whether a hit happened or not

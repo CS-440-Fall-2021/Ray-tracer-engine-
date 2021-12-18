@@ -38,6 +38,8 @@ public:
   std::vector<Light *> lights;
   BBox Worldbox;
   float PROXIMITY_THRESHOLD;
+  std::vector<Geometry *> * Grid;
+  int num_rows;
 
 public:
   // Constructors.
