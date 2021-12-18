@@ -110,9 +110,30 @@ int main(int argc, char **argv)
         if (sinfo.hit)
         {
           // Cast Shadow Ray
-          float light_val = world.get_light_value(sinfo.hit_point);
+          // float light_val = world.get_light_value(sinfo.hit_point);
+          // pixel_color += light_val * weight * sinfo.material_ptr->shade(sinfo);
 
-          pixel_color += light_val * weight * sinfo.material_ptr->shade(sinfo);
+          Vector3D a = (ray.d)*(sinfo.normal);
+          Vector3D b = 2*((a)*(sinfo.normal));
+          Vector3D c = b - ray.d;
+          Point3D hp = sinfo.hit_point;
+          c.normalize();
+          RGBColor ray_col = sinfo.material_ptr->shade(sinfo);
+          float light_val = world.get_light_value(sinfo.hit_point);
+          ray_col = light_val * ray_col;
+          Ray sec = Ray(hp, c, ray_col);
+          ShadeInfo sinfo_sec = world.hit_objects(sec);
+
+          if (sinfo_sec.hit)
+          {
+            float light_val = world.get_light_value(sinfo_sec.hit_point);
+            pixel_color += light_val * weight * sinfo_sec.material_ptr->shade(sinfo_sec);
+          }
+          else
+          {
+            pixel_color += weight * world.bg_color;
+          }
+
         }
         else
         {

@@ -66,8 +66,8 @@ void World::build() {
   vplane.bottom_right.x = 15;
   vplane.bottom_right.y = -15;
   vplane.bottom_right.z = -50;
-  vplane.hres = 400;
-  vplane.vres = 400;
+  vplane.hres = 40;
+  vplane.vres = 40;
 
   // Background color.  
   bg_color = black;
@@ -94,7 +94,7 @@ void World::build() {
   Vector3D light2_normal(0, -1, 0);
   float light2_fol = 90;
 
-  add_light(new Light(light1_origin, light1_normal, light1_fol));
+  // add_light(new Light(light1_origin, light1_normal, light1_fol));
   add_light(new Light(light2_origin, light2_normal, light2_fol));
 
   // Geometry
@@ -102,9 +102,9 @@ void World::build() {
   sphere_ptr->set_material(new Cosine(red));
   add_geometry(sphere_ptr);
 
-  Sphere* sphere_ptr_2 = new Sphere(Point3D(10, 0, -70), 5);
-  sphere_ptr_2->set_material(new Cosine(blue));
-  add_geometry(sphere_ptr_2);
+  // Sphere* sphere_ptr_2 = new Sphere(Point3D(10, 0, -70), 5);
+  // sphere_ptr_2->set_material(new Cosine(blue));
+  // add_geometry(sphere_ptr_2);
 
   Plane* back = new Plane(Point3D(0, 0, -90), Vector3D(0, 0, 1));
   Plane* bottom = new Plane(Point3D(0, -10, 0), Vector3D(0, 1, 0));
@@ -153,7 +153,7 @@ ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
 float World::get_light_value(const Point3D &hit_point) {
   const int total_lights = lights.size();
   const float ind_light_weight = 1.0 / total_lights;
-  float light_val = 0;
+  float light_val = 0; 
 
   // For each light in the world, cast a shadow ray to it
   // and see if the ray reaches or not.
