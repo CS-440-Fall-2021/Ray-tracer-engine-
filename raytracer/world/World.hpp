@@ -36,8 +36,11 @@ public:
   Sampler *sampler_ptr;
   Lens *lens_ptr;
   std::vector<Light *> lights;
-  BBox Worldbox;
   float PROXIMITY_THRESHOLD;
+  
+  BBox Worldbox;
+  Vector3D resolution;
+  Vector3D celldim;
   std::vector<Geometry *> * Grid;
   int num_rows;
 
@@ -62,7 +65,7 @@ public:
   // Returns appropriate shading information corresponding to intersection of
   // the ray with the scene geometry.
   ShadeInfo hit_objects(const Ray &ray, bool hit_walls=true);
-
+ShadeInfo hit_objects2(const Ray &ray, bool hit_walls=true);
   // Returns a float in [0, 1] corresponding to how much light hits the passed
   // hit_point.
   // For example: if 3/4 lights illuminate hit_point, return value will be 0.75.
