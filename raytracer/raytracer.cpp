@@ -109,7 +109,7 @@ int main(int argc, char **argv)
         
         if (sinfo.hit)
         {
-          // TODO: cast shadow ray
+          // Cast Shadow Ray
           float light_val = world.get_light_value(sinfo.hit_point);
 
           pixel_color += light_val * weight * sinfo.material_ptr->shade(sinfo);

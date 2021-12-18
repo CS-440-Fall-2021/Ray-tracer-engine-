@@ -115,26 +115,14 @@ void World::build() {
   add_geometry(back, true);
   add_geometry(bottom, true);
 
-  Point3D a(-5, 0, -55);
-  Point3D b(5, 0, -55);
-  Point3D c(0, 5, -55);
-  Triangle* tri_ptr = new Triangle(a, b, c);
-  tri_ptr->set_material(new Cosine(blue));
-  add_geometry(tri_ptr);
-
-  this->addBBoxes();
+  // Point3D a(-5, 0, -55);
+  // Point3D b(5, 0, -55);
+  // Point3D c(0, 5, -55);
+  // Triangle* tri_ptr = new Triangle(a, b, c);
+  // tri_ptr->set_material(new Cosine(blue));
+  // add_geometry(tri_ptr);
 }
 
-void World::addBBoxes(){
-  std::vector<BBox*> BBoxes; 
-  for (auto geo_obj : geometry){
-    BBox temp = geo_obj->getBBox();
-    BBoxes.push_back(&temp);
-  }
-  
-  this->Worldbox = BBox::extend(BBoxes);
-
-}
 
 ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
   bool hit = false; // to keep track of whether a hit happened or not
