@@ -66,8 +66,8 @@ void World::build() {
   vplane.bottom_right.x = 15;
   vplane.bottom_right.y = -15;
   vplane.bottom_right.z = -50;
-  vplane.hres = 40;
-  vplane.vres = 40;
+  vplane.hres = 400;
+  vplane.vres = 400;
 
   // Background color.  
   bg_color = black;
@@ -94,7 +94,7 @@ void World::build() {
   Vector3D light2_normal(0, -1, 0);
   float light2_fol = 90;
 
-  // add_light(new Light(light1_origin, light1_normal, light1_fol));
+  add_light(new Light(light1_origin, light1_normal, light1_fol));
   add_light(new Light(light2_origin, light2_normal, light2_fol));
 
   // Geometry
@@ -102,18 +102,27 @@ void World::build() {
   sphere_ptr->set_material(new Cosine(red));
   add_geometry(sphere_ptr);
 
-  // Sphere* sphere_ptr_2 = new Sphere(Point3D(10, 0, -70), 5);
-  // sphere_ptr_2->set_material(new Cosine(blue));
-  // add_geometry(sphere_ptr_2);
+  Sphere* sphere_ptr_2 = new Sphere(Point3D(10, 0, -70), 5);
+  sphere_ptr_2->set_material(new Cosine(blue));
+  add_geometry(sphere_ptr_2);
 
   Plane* back = new Plane(Point3D(0, 0, -90), Vector3D(0, 0, 1));
   Plane* bottom = new Plane(Point3D(0, -10, 0), Vector3D(0, 1, 0));
+  Plane* left = new Plane(Point3D(-20, 0, 0), Vector3D(1, 0, 0));
+  Plane* right = new Plane(Point3D(20, 0, 0), Vector3D(-1, 0, 0));
+  Plane* top = new Plane(Point3D(0, 21, 0), Vector3D(0, -1, 0));
 
   back->set_material(new Cosine(white));
-  bottom->set_material(new Cosine(RGBColor(0.75, 0.75, 0.75)));
+  bottom->set_material(new Cosine(RGBColor(0.95, 0.95, 0.95)));
+  left->set_material(new Cosine(white));
+  right->set_material(new Cosine(white));
+  top->set_material(new Cosine(white));
 
   add_geometry(back, true);
   add_geometry(bottom, true);
+  add_geometry(left, true);
+  add_geometry(right, true);
+  add_geometry(top, true);
 
   // Point3D a(-5, 0, -55);
   // Point3D b(5, 0, -55);
