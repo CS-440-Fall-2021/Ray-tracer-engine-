@@ -158,7 +158,12 @@ void World::build() {
 
   this->Worldbox = BBox::extend(BBoxes);
   this->Worldbox.pmin.z -= 10;
+  this->Worldbox.pmin.y -= 10;
+  this->Worldbox.pmin.x -= 10;
 
+  this->Worldbox.pmax.z += 10;
+  this->Worldbox.pmax.y += 10;
+  this->Worldbox.pmax.x += 10;
   
   this->acceleration.init(this->geometry, this->walls, this->Worldbox);
   this->acceleration.generateGrid();
