@@ -87,9 +87,9 @@ void World::build() {
   sampler_ptr = new Simple(lens_ptr, &vplane);
 
   // Lights
-  Point3D light1_origin(-10, 20, -55);
+  Point3D light1_origin(0, 20, -62.5);
   Vector3D light1_normal(0, -1, 0);
-  float light1_fol = 90;
+  float light1_fol = 45;
 
   // Point3D light2_origin(10, 20, -70);
   // Vector3D light2_normal(0, -1, 0);
@@ -160,7 +160,7 @@ ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
   return s_min;
 }
 
-float World::get_light_value(const Point3D &hit_point) {
+float World::get_light_value(const Point3D &hit_point, bool is_ray_primary) {
   const int total_lights = lights.size();
   const float ind_light_weight = 1.0 / total_lights;
   float light_val = 0; 
@@ -170,13 +170,24 @@ float World::get_light_value(const Point3D &hit_point) {
   for(Light *light : lights) {
     
     Vector3D dir = (light->origin - hit_point);
+    float distance = dir.length();
     dir.normalize();
+
+    float angle = abs(acos(-dir * light->normal) * 180 / PI);
+
     Ray shadow_ray(hit_point, dir);
 
     ShadeInfo sinfo = hit_objects(shadow_ray, false);
 
     if (sinfo.hit == false) {
-      light_val += ind_light_weight;
+      if (is_ray_primary) {
+        if (angle <= light->fol) {
+          light_val += ((500.0 / pow(distance, 2)) * ind_light_weight);
+        }
+      }
+      else {
+        light_val += ((500.0 / pow(distance, 2)) * ind_light_weight);
+      }
     }
   }
 

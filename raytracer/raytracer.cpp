@@ -155,7 +155,7 @@ int main(int argc, char **argv)
 
               float light_val2;
               if (lighting) {
-                light_val2 = world.get_light_value(sinfo_sec.hit_point);
+                light_val2 = world.get_light_value(sinfo_sec.hit_point, false);
               } else {
                 light_val2 = 1;
               }
