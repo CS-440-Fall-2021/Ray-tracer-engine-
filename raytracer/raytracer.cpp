@@ -19,13 +19,11 @@
 
 auto start = std::chrono::high_resolution_clock::now();
 
-// Simulation Parameters
-int NPR = 1000; // Number of primary rays
-const bool blur = true;
-int PROXIMITY_THRESHOLD = 20;
+int _NPR = NPR;
+
 int main(int argc, char **argv)
 {
-  World world(PROXIMITY_THRESHOLD);
+  World world;
   world.build();
   std::cout << "World built.\n";
 
@@ -72,10 +70,10 @@ int main(int argc, char **argv)
 
       // std::cout << "Generating Primary Rays...\n";
       if (!blur) {
-        NPR = 1;
+        _NPR = 1;
       }
       
-      for (int i = 0; i < NPR; i++)
+      for (int i = 0; i < _NPR; i++)
       {
         Point3D origin;
         
@@ -89,7 +87,7 @@ int main(int argc, char **argv)
 
         Ray r(origin, direction);
         // r.w = (1.0 / NPR) * (lens.radius - (lens.origin.distance(origin))) / lens.radius;
-        r.w = (1.0 / NPR);
+        r.w = (1.0 / _NPR);
 
         // if (i == 4) {
         //   std::cout << "Primary Ray #5:\n" + r.to_string() + "\n";
@@ -112,7 +110,7 @@ int main(int argc, char **argv)
           // TODO: cast shadow ray
           float light_val = world.get_light_value(sinfo.hit_point);
 
-          pixel_color += light_val * weight * sinfo.material_ptr->shade(sinfo);
+          pixel_color += brightness_adjustment * light_val * weight * sinfo.material_ptr->shade(sinfo);
         }
         else
         {
