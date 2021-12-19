@@ -40,3 +40,12 @@ RGBColor Wall::shade(const ShadeInfo &sinfo) const {
 
     return computed_color;
 }
+
+
+float Wall::get_inc_index() const {
+    return this->inc_ind;
+}
+
+float Wall::get_r_index() const {
+    return this->r_ind;
+}

@@ -11,6 +11,9 @@ class RGBColor;
 class ShadeInfo;
 
 class Material {
+protected:
+  float r_ind;  // specify significance for the color of the reflected ray
+  float inc_ind;  // // specify significance for the color of the incident ray
 public:
   // Constructors.
   Material() = default; // does nothing.
@@ -24,4 +27,6 @@ public:
 
   // Get color.
   virtual RGBColor shade(const ShadeInfo &sinfo) const = 0;
+  virtual float get_r_index() const = 0;
+  virtual float get_inc_index() const = 0;
 };

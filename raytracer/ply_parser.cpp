@@ -17,10 +17,6 @@ int main(){
             Point3D p(i[0], i[1], i[2]);
             points.push_back(p);
         }
-    // for (auto p : points) 
-    //     {
-    //         std::cout << p << " ";
-    //     }
     for (int i=0; i<points.size(); ++i)
     std::cout <<points[i].to_string() << '\n';
 }

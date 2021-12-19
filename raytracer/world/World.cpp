@@ -6,6 +6,8 @@
 #include "../geometry/Triangle.hpp"
 #include "../materials/Cosine.hpp"
 #include "../materials/Wall.hpp"
+#include "../materials/Matte.hpp"
+#include "../materials/Glossy.hpp"
 #include "../samplers/Simple.hpp"
 #include "../utilities/Constants.hpp"
 #include "../utilities/ShadeInfo.hpp"
@@ -89,22 +91,22 @@ void World::build() {
   // Lights
   Point3D light1_origin(0, 20, -62.5);
   Vector3D light1_normal(0, -1, 0);
-  float light1_fol = 45;
+  float light1_fol = 90;
 
-  // Point3D light2_origin(10, 20, -70);
-  // Vector3D light2_normal(0, -1, 0);
-  // float light2_fol = 90;
+  Point3D light2_origin(10, 20, -70);
+  Vector3D light2_normal(0, -1, 0);
+  float light2_fol = 90;
 
   add_light(new Light(light1_origin, light1_normal, light1_fol));
-  // add_light(new Light(light2_origin, light2_normal, light2_fol));
+  add_light(new Light(light2_origin, light2_normal, light2_fol));
 
   // Geometry
   Sphere* sphere_ptr = new Sphere(Point3D(-10, 0, -55), 5);
-  sphere_ptr->set_material(new Cosine(red));
+  sphere_ptr->set_material(new Glossy(red));
   add_geometry(sphere_ptr);
 
   Sphere* sphere_ptr_2 = new Sphere(Point3D(10, 0, -70), 5);
-  sphere_ptr_2->set_material(new Cosine(blue));
+  sphere_ptr_2->set_material(new Glossy(blue));
   add_geometry(sphere_ptr_2);
 
   Plane* back = new Plane(Point3D(0, 0, -90), Vector3D(0, 0, 1));
@@ -181,7 +183,7 @@ float World::get_light_value(const Point3D &hit_point, bool is_ray_primary) {
 
     if (sinfo.hit == false) {
       if (is_ray_primary) {
-        if (angle <= light->fol) {
+        if (true) {
           light_val += ((500.0 / pow(distance, 2)) * ind_light_weight);
         }
       }
