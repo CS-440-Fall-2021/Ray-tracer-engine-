@@ -1,3 +1,9 @@
+
+/**
+   This builds a simple scene that consists of a sphere, a triangle, and a
+   plane.
+   Parallel viewing is used with a single sample per pixel.
+*/
 #include "World.hpp"
 #include "../cameras/Perspective.hpp"
 #include "../cameras/Parallel.hpp"
@@ -19,47 +25,6 @@
 #include <algorithm>
 #include <cmath>
 
-World::World() {
-  // Feel free to override in World::build() as needed.
-  vplane.set_hres(640);
-  vplane.set_vres(480);
-  vplane.top_left = Point3D(-320, 240, 0);
-  vplane.bottom_right = Point3D(320, -240, 0);
-  vplane.normal = Vector3D(0, 0, -1);
-
-  bg_color = RGBColor(0, 0, 0);
-}
-
-World::~World() {
-  for (auto g : geometry) {
-    free(g);
-  }
-  for (auto l : lights) {
-    free(l);
-  }
-  free(camera_ptr);
-  free(sampler_ptr);
-  free(lens_ptr);
-}
-
-void World::add_geometry(Geometry* geom_ptr, bool is_wall) {
-  if (is_wall) {
-    walls.push_back(geom_ptr);
-  }
-  geometry.push_back(geom_ptr);
-}
-
-void World::add_light(Light* light_ptr) {
-  lights.push_back(light_ptr);
-}
-
-void World::set_camera(Camera* c_ptr) {
-  camera_ptr = c_ptr;
-}
-
-void World::set_lens(Lens* l_ptr) {
-  lens_ptr = l_ptr;
-}
 
 void World::build() {
   //https://www.scratchapixel.com/lessons/advanced-rendering/introduction-acceleration-structure/grid
@@ -72,8 +37,8 @@ void World::build() {
   vplane.bottom_right.x = 15;
   vplane.bottom_right.y = -15;
   vplane.bottom_right.z = -50;
-  vplane.hres = 360;
-  vplane.vres = 360;
+  vplane.hres = 1080;
+  vplane.vres = 1080;
 
   // Background color.  
   bg_color = black;
@@ -162,74 +127,4 @@ void World::build() {
   
   this->acceleration.init(this->geometry, this->walls, this->Worldbox);
   this->acceleration.generateGrid();
-}
-
-
-ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
-  if (to_accelerate) {
-    return this->acceleration.hit_objects(ray, *this, hit_walls);
-  }
-  else {
-    return unaccel_hit_objects(ray, hit_walls);
-  }
-}
-
-ShadeInfo World::unaccel_hit_objects(const Ray& ray, bool hit_walls) {
-  bool hit = false; // to keep track of whether a hit happened or not
-  float t = 0; // represents a point on the ray
-  ShadeInfo s(*this);
-
-  float t_min = kHugeValue; // to keep track of the smallest t value
-  ShadeInfo s_min(*this); // to keep track of the ShadeInfo associated with t_min
-
-  for (auto geo_obj : geometry) {
-    if (!hit_walls) {
-      if (std::count(walls.begin(), walls.end(), geo_obj) != 0) {
-        continue;
-      }
-    }
-
-    hit = geo_obj->hit(ray, t, s);
-
-    if (hit == true && t <= t_min) {
-      t_min = t;
-
-      s_min = ShadeInfo(s);
-    }
-  }
-  return s_min;
-}
-
-float World::get_light_value(const Point3D &hit_point, bool is_ray_primary) {
-  const int total_lights = lights.size();
-  const float ind_light_weight = 1.0 / total_lights;
-  float light_val = 0; 
-
-  // For each light in the world, cast a shadow ray to it
-  // and see if the ray reaches or not.
-  for (Light* light : lights) {
-
-    Vector3D dir = (light->origin - hit_point);
-    float distance = dir.length();
-    dir.normalize();
-
-    float angle = abs(acos(-dir * light->normal) * 180 / PI);
-
-    Ray shadow_ray(hit_point, dir);
-
-    ShadeInfo sinfo = hit_objects(shadow_ray, false);
-
-    if (sinfo.hit == false) {
-      if (is_ray_primary) {
-        if (true) {
-          light_val += ((500.0 / pow(distance, 2)) * ind_light_weight);
-        }
-      }
-      else {
-        light_val += ((500.0 / pow(distance, 2)) * ind_light_weight);
-      }
-    }
-  }
-
-  return light_val;
 }

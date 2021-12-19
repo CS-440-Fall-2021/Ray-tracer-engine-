@@ -103,8 +103,17 @@ There is a lot to handle and there are bound to be confusions and queries. Pleas
 # Compile Instructions
 Make sure `g++` is added to your `PATH`. You can check by typing `g++ --version` in your terminal and hitting enter. If you see the version number, all is well. Otherwise, please config your environment variables before proceeding any further.
 
+You can also swap the build function using the given world:build functions in build folder and further tweak the parameters using SimulationParameters.hpp
+
 Change your current working directory to `raytracer` and run the following:
 ```
 g++ raytracer.cpp "cameras/Parallel.cpp" "cameras/Perspective.cpp" "geometry/Sphere.cpp" "geometry/Triangle.cpp" "geometry/Plane.cpp" "geometry/Geometry.cpp" "materials/Cosine.cpp" "samplers/Sampler.cpp" "samplers/Simple.cpp" "utilities/BBox.cpp" "utilities/helpers.cpp" "utilities/Image.cpp" "utilities/Point3D.cpp" "utilities/Vector3D.cpp" "utilities/Ray.cpp" "utilities/RGBColor.cpp" "utilities/ShadeInfo.cpp" "world/World.cpp" "world/ViewPlane.cpp" "lenses/Lens.cpp" "lights/Light.cpp" "acceleration/Accelerator.cpp" "materials/Wall.cpp" "materials/Matte.cpp" "materials/Glossy.cpp" -o main.exe
 ```
 Finally, execute `main.exe` to run the raytracer.
+
+# Showcase Files
+
+The following link showcases all our work:
+```
+https://owais2399.github.io/pipeline-raytracer/
+```
