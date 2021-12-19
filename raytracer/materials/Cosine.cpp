@@ -36,5 +36,14 @@ Cosine &Cosine::operator=(const Cosine &other) {
 
 RGBColor Cosine::shade(const ShadeInfo &sinfo) const {
     float cos_theta = sinfo.normal * -sinfo.ray.d;
-    return color * cos_theta;
+    return sinfo.ray.color * color * cos_theta;  
+}
+
+
+float Cosine::get_inc_index() const {
+    return this->inc_ind;
+}
+
+float Cosine::get_r_index() const {
+    return this->r_ind;
 }

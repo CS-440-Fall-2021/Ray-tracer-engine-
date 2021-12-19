@@ -5,6 +5,9 @@
 #include "../geometry/Sphere.hpp"
 #include "../geometry/Triangle.hpp"
 #include "../materials/Cosine.hpp"
+#include "../materials/Wall.hpp"
+#include "../materials/Matte.hpp"
+#include "../materials/Glossy.hpp"
 #include "../samplers/Simple.hpp"
 #include "../utilities/Constants.hpp"
 #include "../utilities/ShadeInfo.hpp"
@@ -89,7 +92,7 @@ void World::build() {
   sampler_ptr = new Simple(lens_ptr, &vplane);
 
   // Lights
-  Point3D light1_origin(-10, 20, -55);
+  Point3D light1_origin(0, 20, -62.5);
   Vector3D light1_normal(0, -1, 0);
   float light1_fol = 90;
 
@@ -106,7 +109,7 @@ void World::build() {
   
   // Geometry
   Sphere* sphere_ptr = new Sphere(Point3D(-10, 0, -55), 5);
-  sphere_ptr->set_material(new Cosine(red));
+  sphere_ptr->set_material(new Glossy(red));
   add_geometry(sphere_ptr);
   
   BBox* b1 = new BBox(sphere_ptr->getBBox());
@@ -114,7 +117,7 @@ void World::build() {
 
 
   Sphere* sphere_ptr_2 = new Sphere(Point3D(10, 0, -70), 5);
-  sphere_ptr_2->set_material(new Cosine(blue));
+  sphere_ptr_2->set_material(new Glossy(blue));
   add_geometry(sphere_ptr_2);
   
   BBox* b2 = new BBox(sphere_ptr_2->getBBox());
@@ -122,12 +125,21 @@ void World::build() {
 
   Plane* back = new Plane(Point3D(0, 0, -90), Vector3D(0, 0, 1));
   Plane* bottom = new Plane(Point3D(0, -10, 0), Vector3D(0, 1, 0));
+  Plane* left = new Plane(Point3D(-20, 0, 0), Vector3D(1, 0, 0));
+  Plane* right = new Plane(Point3D(20, 0, 0), Vector3D(-1, 0, 0));
+  Plane* top = new Plane(Point3D(0, 21, 0), Vector3D(0, -1, 0));
 
-  back->set_material(new Cosine(white));
-  bottom->set_material(new Cosine(RGBColor(0.75, 0.75, 0.75)));
+  back->set_material(new Wall(white));
+  bottom->set_material(new Wall(RGBColor(0.7, 0.7, 0.7)));
+  left->set_material(new Wall(RGBColor(0.9, 0.9, 0.9)));
+  right->set_material(new Wall(RGBColor(0.9, 0.9, 0.9)));
+  top->set_material(new Wall(white));
 
   add_geometry(back, true);
   add_geometry(bottom, true);
+  add_geometry(left, true);
+  add_geometry(right, true);
+  add_geometry(top, true);
 
 
   this->Worldbox = BBox::extend(BBoxes);
@@ -174,23 +186,34 @@ ShadeInfo World::unaccel_hit_objects(const Ray& ray, bool hit_walls) {
   return s_min;
 }
 
-float World::get_light_value(const Point3D& hit_point) {
+float World::get_light_value(const Point3D &hit_point, bool is_ray_primary) {
   const int total_lights = lights.size();
   const float ind_light_weight = 1.0 / total_lights;
-  float light_val = 0;
+  float light_val = 0; 
 
   // For each light in the world, cast a shadow ray to it
   // and see if the ray reaches or not.
   for (Light* light : lights) {
 
     Vector3D dir = (light->origin - hit_point);
+    float distance = dir.length();
     dir.normalize();
+
+    float angle = abs(acos(-dir * light->normal) * 180 / PI);
+
     Ray shadow_ray(hit_point, dir);
 
     ShadeInfo sinfo = hit_objects(shadow_ray, false);
 
     if (sinfo.hit == false) {
-      light_val += ind_light_weight;
+      if (is_ray_primary) {
+        if (true) {
+          light_val += ((500.0 / pow(distance, 2)) * ind_light_weight);
+        }
+      }
+      else {
+        light_val += ((500.0 / pow(distance, 2)) * ind_light_weight);
+      }
     }
   }
 

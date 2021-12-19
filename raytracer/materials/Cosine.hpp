@@ -19,6 +19,8 @@ protected:
   RGBColor color; // the color of the material.
 
 public:
+  float r_ind = 0.5;    // specify significance for the color of the reflected ray
+  float inc_ind = 0.5;  // // specify significance for the color of the incident ray
   // Constructors.
   Cosine();                          // set color to (0, 0, 0).
   Cosine(float c);                   // set color to (c, c, c).
@@ -37,4 +39,7 @@ public:
      Assuming unit vectors, cos \theta = dot product of normal and -ray.dir.
   */
   virtual RGBColor shade(const ShadeInfo &sinfo) const override;
+
+    virtual float get_r_index() const override;
+    virtual float get_inc_index() const override;
 };

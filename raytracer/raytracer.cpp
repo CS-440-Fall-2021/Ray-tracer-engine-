@@ -107,10 +107,63 @@ int main(int argc, char **argv)
         
         if (sinfo.hit)
         {
-          // TODO: cast shadow ray
-          float light_val = world.get_light_value(sinfo.hit_point);
+          if (!secondary_rays) {
+            
+            float light_val;
 
-          pixel_color += brightness_adjustment * light_val * weight * sinfo.material_ptr->shade(sinfo);
+            if (lighting) {
+              // Cast Shadow Ray
+              light_val = world.get_light_value(sinfo.hit_point);
+            } else {
+              light_val = 1;
+            }
+
+            pixel_color += light_val * weight * sinfo.material_ptr->shade(sinfo);
+
+          } else {
+            // Determine direction of secondary ray
+            Vector3D a = (ray.d)*(sinfo.normal);
+            Vector3D b = 2*((a)*(sinfo.normal));
+            Vector3D c = b - ray.d;
+            c.normalize();
+
+            // Determine secondary ray's color
+            RGBColor ray_col = sinfo.material_ptr->shade(sinfo);
+            float light_val1;
+            if (lighting) {
+              light_val1 = world.get_light_value(sinfo.hit_point);
+            } else {
+              light_val1 = 1;
+            }
+            ray_col = light_val1 * ray_col;
+
+            Point3D hp = sinfo.hit_point;
+
+            // Generate secondary ray
+            Ray sec = Ray(hp, c, ray_col);
+
+            // Release secondary ray into the world
+            ShadeInfo sinfo_sec = world.hit_objects(sec);
+
+            if (sinfo_sec.hit)
+            {
+              // std::cout << "Secondary Ray: HIT. Color: " + sinfo_sec.material_ptr->shade(sinfo_sec).to_string() + "\n";
+
+              float light_val2;
+              if (lighting) {
+                light_val2 = world.get_light_value(sinfo_sec.hit_point, false);
+              } else {
+                light_val2 = 1;
+              }
+
+              // pixel_color += weight * ((0.5 * light_val2 * sinfo_sec.material_ptr->shade(sinfo_sec)) + (0.5 * ray_col));
+              pixel_color += brightness_adjustment * weight * ((sinfo.material_ptr->get_r_index() * light_val2 * sinfo_sec.material_ptr->shade(sinfo_sec)) + (sinfo.material_ptr->get_inc_index() * ray_col));
+            }
+            else
+            {
+              pixel_color += weight * brightness_adjustment * ray_col;
+            }
+          }
         }
         else
         {

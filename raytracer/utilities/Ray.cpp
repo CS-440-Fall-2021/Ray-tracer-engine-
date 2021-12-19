@@ -12,6 +12,10 @@ Ray::Ray() {
     d.normalize();
 
     w = 1;
+
+    color.r = 1;
+    color.g = 1;
+    color.b = 1;
 }
 
 Ray::Ray(const Point3D &origin, const Vector3D &dir) {
@@ -19,6 +23,21 @@ Ray::Ray(const Point3D &origin, const Vector3D &dir) {
     d = dir;
     d.normalize();
     w = 1;
+
+    color.r = 1;
+    color.g = 1;
+    color.b = 1;
+}
+
+Ray::Ray(const Point3D &origin, const Vector3D &dir, const RGBColor &clr) {
+    o = origin;
+    d = dir;
+    d.normalize();
+    w = 1;
+    
+    color.r = clr.r;
+    color.g = clr.g;
+    color.b = clr.b;
 }
 
 std::string Ray::to_string() const {
