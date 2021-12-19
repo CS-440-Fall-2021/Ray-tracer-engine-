@@ -15,7 +15,7 @@
 #include "../utilities/RGBColor.hpp"
 #include "../lights/Light.hpp"
 #include "../utilities/BBox.hpp"
-
+#include "../acceleration/Accelerator.hpp"
 #include "ViewPlane.hpp"
 
 class Camera;
@@ -43,6 +43,8 @@ public:
   Vector3D celldim;
   std::vector<Geometry *> * Grid;
   int num_rows;
+
+  Accelerator Accelerate;
 
 public:
   // Constructors.

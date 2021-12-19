@@ -21,13 +21,13 @@ public:
 
     // Takes all the geometry in the scene and creates individual BBoxes
     // as well as the Worldbox.
-    void init(std::vector<Geometry*> &geometry, std::vector<Geometry*> &walls);
+    void init(std::vector<Geometry*> &geometry, std::vector<Geometry*> &walls, BBox &Worldbox);
     
     // Generates the grid and populates the Grid arary with elements.
-    void generateGrid(std::vector<Geometry *> &geometry, std::vector<Geometry*> &walls);
+    void generateGrid();
 
     // Prints out the grid for debugging.
     void printGrid();
 
-    ShadeInfo hit_objects(const Ray &ray, bool hit_walls=true);
+    ShadeInfo hit_objects(const Ray &ray, World& wr, bool hit_walls=true);
 };

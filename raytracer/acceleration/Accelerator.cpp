@@ -1,28 +1,29 @@
 #include "./Accelerator.hpp"
 #include <algorithm>
+#include <cmath>
 
-void Accelerator::init(std::vector<Geometry*>& geometry, std::vector<Geometry*>& walls) {
+void Accelerator::init(std::vector<Geometry*>& geometry, std::vector<Geometry*>& walls, BBox &Worldbox) {
     
     this->geometry = &geometry;
     this->walls = &walls;
 
-    for (auto geo : geometry) {
-        if (std::count(walls.begin(), walls.end(), geo) != 0) {
-            continue;
-        }
-        BBoxes.push_back(new BBox(geo->getBBox()));
-    }
+    // for (auto geo : geometry) {
+    //     if (std::count(walls.begin(), walls.end(), geo) != 0) {
+    //         continue;
+    //     }
+    //     BBoxes.push_back(new BBox(geo->getBBox()));
+    // }
 
-    Worldbox = BBox::extend(BBoxes);
+    this->Worldbox = Worldbox;
 
-    // TODO
-    Worldbox.pmin.z -= 10;
+    // // TODO
+    // this->Worldbox.pmin.z -= 10;
 }
 
-void Accelerator::generateGrid(std::vector<Geometry*>& geometry, std::vector<Geometry*>& walls) {
+void Accelerator::generateGrid() {
     Vector3D size_of_world = this->Worldbox.pmax - this->Worldbox.pmin;
 
-    int Total_primitives = geometry.size();
+    int Total_primitives = geometry->size();
 
     float Croot = std::cbrt(Total_primitives / (size_of_world.x * size_of_world.y * size_of_world.z));
 
@@ -48,9 +49,9 @@ void Accelerator::generateGrid(std::vector<Geometry*>& geometry, std::vector<Geo
 
     this->Grid = new std::vector<Geometry*>[this->num_rows];
 
-    for (auto geo : geometry) {
+    for (auto geo : *geometry) {
 
-        if (std::count(walls.begin(), walls.end(), geo) != 0) {
+        if (std::count(walls->begin(), walls->end(), geo) != 0) {
             continue;
         }
         if (geo != NULL) {
@@ -104,23 +105,23 @@ void Accelerator::printGrid() {
     }
 }
 
-ShadeInfo Accelerator::hit_objects(const Ray& ray, bool hit_walls) {
+ShadeInfo Accelerator::hit_objects(const Ray& ray, World& wr,bool hit_walls ) {
     //https://www.scratchapixel.com/lessons/advanced-rendering/introduction-acceleration-structure/grid
 
     bool hit = false; // to keep track of whether a hit happened or not
     float t = 0; // represents a point on the ray
-    ShadeInfo s(*this);
+    ShadeInfo s(wr);
 
     float t_min = kHugeValue; // to keep track of the smallest t value
-    ShadeInfo s_min(*this); // to keep track of the ShadeInfo associated with t_min
+    ShadeInfo s_min(wr); // to keep track of the ShadeInfo associated with t_min
     float t_enter;
     float t_exit;
 
     float t_min_wall = kHugeValue;
-    ShadeInfo s_min_wall(*this);
+    ShadeInfo s_min_wall(wr);
 
     if (hit_walls) {
-        for (auto wall : this->walls) {
+        for (auto wall : *this->walls) {
             hit = wall->hit(ray, t, s);
 
             if (hit == true && t < t_min) {
@@ -199,7 +200,7 @@ ShadeInfo Accelerator::hit_objects(const Ray& ray, bool hit_walls) {
         for (auto geo_obj : this->Grid[c]) {
             if (geo_obj != NULL) {
                 if (!hit_walls) {
-                    if (std::count(walls.begin(), walls.end(), geo_obj) != 0) {
+                    if (std::count(walls->begin(), walls->end(), geo_obj) != 0) {
                         continue;
                     }
                 }
