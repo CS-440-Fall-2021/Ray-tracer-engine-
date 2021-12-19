@@ -28,19 +28,38 @@ bool BBox::hit(const Ray &ray, float &t_enter, float &t_exit) const {
     Motivation:
     https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection
     */
-    t_enter = (pmin.x - ray.o.x) / ray.d.x;
-    t_exit = (pmax.x - ray.o.x) / ray.d.x;
+    float tymin;
+    float tymax;
 
-    if (t_enter > t_exit) {
-        swap(t_enter, t_exit);
+    float tzmin;
+    float tzmax;
+
+    if (ray.d.x >=0){
+        t_enter = (pmin.x - ray.o.x) / ray.d.x;
+        t_exit = (pmax.x - ray.o.x) / ray.d.x;
+    }
+    else{
+        t_enter = (pmax.x - ray.o.x) / ray.d.x;
+        t_exit = (pmin.x - ray.o.x) / ray.d.x;
     }
 
-    float tymin = (pmin.y - ray.o.y) / ray.d.y; 
-    float tymax = (pmax.y - ray.o.y) / ray.d.y; 
- 
-    if (tymin > tymax) {
-        swap(tymin, tymax);
-    } 
+    if (ray.d.y >=0){
+        tymin = (pmin.y - ray.o.y) / ray.d.y;
+        tymax = (pmax.y - ray.o.y) / ray.d.y;
+    }
+    else{
+        tymin = (pmax.y - ray.o.y) / ray.d.y;
+        tymax = (pmin.y - ray.o.y) / ray.d.y;
+    }
+    
+
+    // if (t_enter > t_exit) {
+    //     swap(t_enter, t_exit);
+    // }
+
+    // if (tymin > tymax) {
+    //     swap(tymin, tymax);
+    // } 
  
     if ((t_enter > tymax) || (tymin > t_exit)) 
         return false; 
@@ -51,12 +70,15 @@ bool BBox::hit(const Ray &ray, float &t_enter, float &t_exit) const {
     if (tymax < t_exit) 
         t_exit = tymax; 
  
-    float tzmin = (pmin.z - ray.o.z) / ray.d.z; 
-    float tzmax = (pmax.z - ray.o.z) / ray.d.z; 
- 
-    if (tzmin > tzmax) {
-        swap(tzmin, tzmax);
+    if (ray.d.z >=0){
+        tzmin = (pmin.z - ray.o.z) / ray.d.z;
+        tzmax = (pmax.z - ray.o.z) / ray.d.z;
     }
+    else{
+        tzmin = (pmax.z - ray.o.z) / ray.d.z;
+        tzmax = (pmin.z - ray.o.z) / ray.d.z;
+    }
+    
  
     if ((t_enter > tzmax) || (tzmin > t_exit)) 
         return false; 
@@ -65,11 +87,14 @@ bool BBox::hit(const Ray &ray, float &t_enter, float &t_exit) const {
         t_enter = tzmin; 
  
     if (tzmax < t_exit) 
-        t_exit = tzmax; 
+        t_exit = tzmax;
     
-    
+    if ((t_exit < 0 ) || (t_enter < 0 )) return false;
     return true; 
 }
+
+
+
 
 void BBox::extend(Geometry *g) {
     BBox newbox = g->getBBox();
