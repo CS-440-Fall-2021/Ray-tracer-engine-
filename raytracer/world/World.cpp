@@ -72,8 +72,8 @@ void World::build() {
   vplane.bottom_right.x = 15;
   vplane.bottom_right.y = -15;
   vplane.bottom_right.z = -50;
-  vplane.hres = 400;
-  vplane.vres = 400;
+  vplane.hres = 40;
+  vplane.vres = 40;
 
   // Background color.  
   bg_color = black;
@@ -92,7 +92,7 @@ void World::build() {
   sampler_ptr = new Simple(lens_ptr, &vplane);
 
   // Lights
-  Point3D light1_origin(0, 20, -62.5);
+  Point3D light1_origin(0, 20, -55);
   Vector3D light1_normal(0, -1, 0);
   float light1_fol = 90;
 
@@ -123,23 +123,37 @@ void World::build() {
   BBox* b2 = new BBox(sphere_ptr_2->getBBox());
   BBoxes.push_back(b2);
 
-  Plane* back = new Plane(Point3D(0, 0, -90), Vector3D(0, 0, 1));
+  Sphere* sphere_ptr_3 = new Sphere(Point3D(0, 7, -80), 5);
+  sphere_ptr_3->set_material(new Glossy(green));
+  add_geometry(sphere_ptr_3);
+  
+  BBox* b3 = new BBox(sphere_ptr_3->getBBox());
+  BBoxes.push_back(b3);
+
+  Sphere* sphere_ptr_4 = new Sphere(Point3D(3, -3, -55), 5);
+  sphere_ptr_4->set_material(new Glossy(RGBColor(0.88, 0.67, 0)));
+  add_geometry(sphere_ptr_4);
+  
+  BBox* b4 = new BBox(sphere_ptr_4->getBBox());
+  BBoxes.push_back(b4);
+
+  // Plane* back = new Plane(Point3D(0, 0, -90), Vector3D(0, 0, 1));
   Plane* bottom = new Plane(Point3D(0, -10, 0), Vector3D(0, 1, 0));
-  Plane* left = new Plane(Point3D(-20, 0, 0), Vector3D(1, 0, 0));
-  Plane* right = new Plane(Point3D(20, 0, 0), Vector3D(-1, 0, 0));
-  Plane* top = new Plane(Point3D(0, 21, 0), Vector3D(0, -1, 0));
+  // Plane* left = new Plane(Point3D(-20, 0, 0), Vector3D(1, 0, 0));
+  // Plane* right = new Plane(Point3D(20, 0, 0), Vector3D(-1, 0, 0));
+  // Plane* top = new Plane(Point3D(0, 21, 0), Vector3D(0, -1, 0));
 
-  back->set_material(new Wall(white));
+  // back->set_material(new Wall(white));
   bottom->set_material(new Wall(RGBColor(0.7, 0.7, 0.7)));
-  left->set_material(new Wall(RGBColor(0.9, 0.9, 0.9)));
-  right->set_material(new Wall(RGBColor(0.9, 0.9, 0.9)));
-  top->set_material(new Wall(white));
+  // left->set_material(new Wall(RGBColor(0.9, 0.9, 0.9)));
+  // right->set_material(new Wall(RGBColor(0.9, 0.9, 0.9)));
+  // top->set_material(new Wall(white));
 
-  add_geometry(back, true);
+  // add_geometry(back, true);
   add_geometry(bottom, true);
-  add_geometry(left, true);
-  add_geometry(right, true);
-  add_geometry(top, true);
+  // add_geometry(left, true);
+  // add_geometry(right, true);
+  // add_geometry(top, true);
 
 
   this->Worldbox = BBox::extend(BBoxes);
