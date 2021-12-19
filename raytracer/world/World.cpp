@@ -213,61 +213,17 @@ void World::build() {
 
 }
 
-// void World::addBBoxes(){
-//   std::vector<BBox*> BBoxes; 
-//   for (auto geo_obj : geometry){
-//     std::cout<< "Geometry is :" + geo_obj->to_string()+"\n";
-//     BBox temporary = geo_obj->getBBox();
-//     std::cout<< "BBox is :" + temporary.to_string()+"\n";
-    
-//     BBoxes.push_back(&temporary);
-//   }
-  
-//   this->Worldbox = BBox::extend(BBoxes);
 
-// }
-
-// void World::cluster(){
-//   std::vector<BBox *> result;
-//   std::vector<BBox *> done;
-//   std::cout<< "Worldbox.children.size() :" + std::to_string(Worldbox.children.size())+ "\n";
-//   for (auto current : this->Worldbox.children){
-//     bool flag = false;
-//     for(auto check : this->Worldbox.children){
-//       if(std::count(done.begin(), done.end(), current) > 0 ){
-//         break;
+//if want to view all geometry 
+//put this in hit_objects and uncomment
+// std::cout << std::to_string(num_rows);
+// for (int i=0; i< num_rows; i= i +1){
+//     for (auto geo_obj : this->Grid[i]){
+//       if (geo_obj != NULL){
+//         std::cout<< "A Shape in row: "+ std::to_string(i) + "is " + geo_obj->to_string()+ "\n";
 //       }
-
-//       if((std::count(done.begin(), done.end(), check) > 0)||
-//         (current->to_string() == check->to_string())){
-//         flag = true;
-//         continue;
-//       }
-//       std::cout<<"KUCH";
-//       Point3D midcurrent = Point3D((current->pmin.x + current->pmax.x)* 0.5,(current->pmin.y + current->pmax.y)* 0.5,(current->pmin.z + current->pmax.z)* 0.5);
-//       Point3D midcheck = Point3D((check->pmin.x + check->pmax.x)* 0.5,(check->pmin.y + check->pmax.y)* 0.5,(check->pmin.z + check->pmax.z)* 0.5);
-
-//       float distance = (midcheck-midcurrent).length();
-//       if (distance <= PROXIMITY_THRESHOLD){
-//         BBox temp = current->extend(*check);
-//         result.push_back(&temp);
-//         done.push_back(current);
-//         done.push_back(check);
-//         flag = true;
-//       }
-
-//     }
-//     if (flag == false){
-//       done.push_back(current);
-//       result.push_back(current);
-//     }
-//     else{
-//       done.push_back(current);
 //     }
 //   }
-//   std::cout<< "result.size(): "+ std::to_string(result.size())+ "\n";
-//   this->Worldbox.children = result;
-// }
 
 ShadeInfo World::hit_objects2(const Ray& ray, bool hit_walls) {
   bool hit = false; // to keep track of whether a hit happened or not
@@ -295,24 +251,10 @@ ShadeInfo World::hit_objects2(const Ray& ray, bool hit_walls) {
   return s_min;
 }
 
-// for (int i=0; i< num_rows; i= i +1){
-  //     for (auto geo_obj : this->Grid[i]){
-  //       if (geo_obj != NULL){
-  //         std::cout<< "A Shape in row: "+ std::to_string(i) + "is " + geo_obj->to_string()+ "\n";
-  //       }
-  //     }
-  //   }
+
 ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
   //https://www.scratchapixel.com/lessons/advanced-rendering/introduction-acceleration-structure/grid
-  // std::cout << std::to_string(num_rows);
-  // for (int i=0; i< num_rows; i= i +1){
-  //     for (auto geo_obj : this->Grid[i]){
-  //       if (geo_obj != NULL){
-  //         std::cout<< "A Shape in row: "+ std::to_string(i) + "is " + geo_obj->to_string()+ "\n";
-  //       }
-  //     }
-  //   }
-  // std::cout<< "The WORLDBOX is :" + this->Worldbox.to_string()+"\n";
+  
   bool hit = false; // to keep track of whether a hit happened or not
   float t = 0; // represents a point on the ray
   ShadeInfo s(*this);
@@ -325,8 +267,7 @@ ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
   if (Worldbox.hit(ray,t_enter,t_exit)== false){
     return s;
   }              
-  // std::cout << "t_enter is " + std::to_string(t_enter)+ "\n";
-  // std::cout << "t_exit is " + std::to_string(t_exit)+ "\n";
+
   Vector3D exit_int, step_int;
   Vector3D deltaT, nextCrossingT;  
 
@@ -339,7 +280,8 @@ ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
     std::min(std::max(std::floor(rayOrigCell.x / this->celldim.x), double(0.0)), this->resolution.x - 1),
     std::min(std::max(std::floor(rayOrigCell.y / this->celldim.y), double(0.0)), this->resolution.y - 1),
     std::min(std::max(std::floor(rayOrigCell.z / this->celldim.z), double(0.0)), this->resolution.z - 1));
-  // std::cout << "cell is " + cell.to_string() + "\n";
+  
+
   if (ray.d.x < 0) { 
     deltaT.x = -this->celldim.x / (ray.d.x); 
     nextCrossingT.x = t_enter + (cell.x * this->celldim.x - rayOrigCell.x) / (ray.d.x); 
@@ -385,64 +327,54 @@ ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
    
   
   while(1){
-    
     int c = cell.z * this->resolution.x * this->resolution.y +
             cell.y * this->resolution.x +
             cell.x;
 
-      for (auto geo_obj : this->Grid[c]) {
-        if (geo_obj != NULL){
-        //std::cout<< "geo_obj here is " + geo_obj->to_string() + "\n";
+    for (auto geo_obj : this->Grid[c]) {
+      if (geo_obj != NULL){
         if (!hit_walls) {
           if (std::count(walls.begin(), walls.end(), geo_obj) != 0) {
             continue;
           }
         }
-        // std::cout<<"here\n";
+
         hit = geo_obj->hit(ray, t, s);
 
         if (hit == true && t < t_min) {
           t_min = t;
-          // std::cout<<"here\n";
-          // std::cout<<"geo-obj here is " + geo_obj->to_string() + "\n";
           s_min = ShadeInfo(s);
-
-
         }
       }
-      }
-      int k = (int(nextCrossingT.x < nextCrossingT.y) << 2+
-              int(nextCrossingT.x < nextCrossingT.z) << 1 +
-              int(nextCrossingT.y < nextCrossingT.z));
+    }
+    int k = (int(nextCrossingT.x < nextCrossingT.y) << 2+
+            int(nextCrossingT.x < nextCrossingT.z) << 1 +
+            int(nextCrossingT.y < nextCrossingT.z));
 
       
-      static const int mapping[8] = {2,1,2,1,2,2,0,0};
-      int axis = mapping[k];
-      // std::cout<< "Here";
-      if (axis == 0){
-        // std::cout << "in x\n";
-        if (double(t_min) < nextCrossingT.x) break;
-        cell.x += step_int.x;
-        if (cell.x == exit_int.x) break;
-        nextCrossingT.x += deltaT.x;
-      }
-      else if (axis == 1){
-        // std::cout << "in y\n";
-        if (double(t_min) < nextCrossingT.y) break;
-        cell.y += step_int.y;
-        if (cell.y == exit_int.y) break;
-        nextCrossingT.y += deltaT.y;
-      }
-      else{
-        // std::cout << "in z\n";
-        if (double(t_min) < nextCrossingT.z) break;
-        cell.z += step_int.z;
-        if (cell.z == exit_int.z) break;
-        nextCrossingT.z += deltaT.z;
-      }
+    static const int mapping[8] = {2,1,2,1,2,2,0,0};
+    int axis = mapping[k];
+      
+    if (axis == 0){
+      if (double(t_min) < nextCrossingT.x) break;
+      cell.x += step_int.x;
+      if (cell.x == exit_int.x) break;
+      nextCrossingT.x += deltaT.x;
     }
+    else if (axis == 1){
+      if (double(t_min) < nextCrossingT.y) break;
+      cell.y += step_int.y;
+      if (cell.y == exit_int.y) break;
+      nextCrossingT.y += deltaT.y;
+    }
+    else{
+      if (double(t_min) < nextCrossingT.z) break;
+      cell.z += step_int.z;
+      if (cell.z == exit_int.z) break;
+      nextCrossingT.z += deltaT.z;
+    }
+  }
   
-  // std::cout<< "outside";
   return s_min;
 }
 float World::get_light_value(const Point3D &hit_point) {
