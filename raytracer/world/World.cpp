@@ -91,12 +91,12 @@ void World::build() {
   Vector3D light1_normal(0, -1, 0);
   float light1_fol = 90;
 
-  Point3D light2_origin(10, 20, -70);
-  Vector3D light2_normal(0, -1, 0);
-  float light2_fol = 90;
+  // Point3D light2_origin(10, 20, -70);
+  // Vector3D light2_normal(0, -1, 0);
+  // float light2_fol = 90;
 
   add_light(new Light(light1_origin, light1_normal, light1_fol));
-  add_light(new Light(light2_origin, light2_normal, light2_fol));
+  // add_light(new Light(light2_origin, light2_normal, light2_fol));
 
   // Geometry
   Sphere* sphere_ptr = new Sphere(Point3D(-10, 0, -55), 5);
@@ -114,9 +114,9 @@ void World::build() {
   Plane* top = new Plane(Point3D(0, 21, 0), Vector3D(0, -1, 0));
 
   back->set_material(new Wall(white));
-  bottom->set_material(new Wall(RGBColor(0.95, 0.95, 0.95)));
-  left->set_material(new Wall(white));
-  right->set_material(new Wall(white));
+  bottom->set_material(new Wall(RGBColor(0.7, 0.7, 0.7)));
+  left->set_material(new Wall(RGBColor(0.9, 0.9, 0.9)));
+  right->set_material(new Wall(RGBColor(0.9, 0.9, 0.9)));
   top->set_material(new Wall(white));
 
   add_geometry(back, true);

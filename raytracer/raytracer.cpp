@@ -21,7 +21,7 @@ auto start = std::chrono::high_resolution_clock::now();
 
 // Simulation Parameters
 int NPR = 1000; // Number of primary rays
-const bool blur = false;
+const bool blur = true;
 const bool secondary_rays = true;
 const bool lighting = true;
 
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
                 light_val2 = 1;
               }
 
-              pixel_color += weight * ((0.25 * light_val2 * sinfo_sec.material_ptr->shade(sinfo_sec)) + (0.75 * ray_col));
+              pixel_color += weight * ((0.5 * light_val2 * sinfo_sec.material_ptr->shade(sinfo_sec)) + (0.5 * ray_col));
             }
             else
             {

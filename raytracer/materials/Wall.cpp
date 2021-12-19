@@ -35,13 +35,8 @@ Wall &Wall::operator=(const Wall &other) {
 }
 
 RGBColor Wall::shade(const ShadeInfo &sinfo) const {
-    float cos_theta = sinfo.normal * -sinfo.ray.d;
+    // float cos_theta = sinfo.normal * -sinfo.ray.d;
     RGBColor computed_color = sinfo.ray.color * color;
-    float avg = (computed_color.r + computed_color.g + computed_color.b) / 3;
 
-    if (avg > 0.25) {
-        return computed_color * cos_theta;
-    } else {
-        return computed_color;
-    }
+    return computed_color;
 }
