@@ -89,7 +89,7 @@ bool BBox::hit(const Ray &ray, float &t_enter, float &t_exit) const {
     if (tzmax < t_exit) 
         t_exit = tzmax;
     
-    if ((t_exit < 0 ) || (t_enter < 0 )) return false;
+    // if ((t_exit < 0 ) || (t_enter < 0 )) return false;
     return true; 
 }
 

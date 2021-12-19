@@ -101,7 +101,7 @@ void World::build() {
 
   std::vector<BBox*> BBoxes; 
   // Geometry
-  Sphere* sphere_ptr = new Sphere(Point3D(0, 0, -55), 5);
+  Sphere* sphere_ptr = new Sphere(Point3D(-10, 0, -55), 5);
   sphere_ptr->set_material(new Cosine(red));
   add_geometry(sphere_ptr);
   BBox* b1 = new BBox(sphere_ptr->getBBox());
@@ -138,7 +138,8 @@ void World::build() {
   // BBoxes.push_back(b5);
 
   this->Worldbox = BBox::extend(BBoxes);
-  
+  //padding;
+  this->Worldbox.pmin.z -= 10;
   Vector3D size_of_world = this->Worldbox.pmax - this->Worldbox.pmin;
   
   int Total_primitives = geometry.size();
@@ -263,10 +264,26 @@ ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
   ShadeInfo s_min(*this); // to keep track of the ShadeInfo associated with t_min
   float t_enter;
   float t_exit;
+
+  float t_min_wall = kHugeValue;
+  ShadeInfo s_min_wall(*this);
+
+  if (hit_walls){ 
+    for (auto wall : this->walls){
+      hit = wall->hit(ray, t, s);
+
+        if (hit == true && t < t_min) {
+          t_min_wall = t;
+          s_min_wall = ShadeInfo(s);
+        }
+    }
+  }
   
+
   if (Worldbox.hit(ray,t_enter,t_exit)== false){
-    return s;
+    return s_min_wall;
   }              
+
 
   Vector3D exit_int, step_int;
   Vector3D deltaT, nextCrossingT;  
@@ -374,10 +391,15 @@ ShadeInfo World::hit_objects(const Ray& ray, bool hit_walls) {
       nextCrossingT.z += deltaT.z;
     }
   }
-  
-  return s_min;
+  if(t_min < t_min_wall){
+    
+    return s_min;
+  } 
+  else{
+    return s_min_wall;
+  }
 }
-float World::get_light_value(const Point3D &hit_point) {
+  float World::get_light_value(const Point3D &hit_point) {
   const int total_lights = lights.size();
   const float ind_light_weight = 1.0 / total_lights;
   float light_val = 0;
