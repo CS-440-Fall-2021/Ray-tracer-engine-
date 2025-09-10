@@ -25,8 +25,8 @@ void World::build() {
     vplane.bottom_right.x = 15;
     vplane.bottom_right.y = -15;
     vplane.bottom_right.z = -30;
-    vplane.hres = 500;
-    vplane.vres = 500;
+    vplane.hres = 1000;
+    vplane.vres = 1000;
 
     // Background color.  
     bg_color = black;

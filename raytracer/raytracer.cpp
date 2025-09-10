@@ -21,8 +21,9 @@ float getLightingIntensity(const ShadeInfo& primary_ray_sinfo, World& world) {
   return world.get_light_value(primary_ray_sinfo.hit_point, primary_ray_sinfo.normal);
 }
 
-void castSecondaryRays(const Ray& incident_ray, const ShadeInfo& incident_ray_sinfo, World& world, const float incident_ray_weight, RGBColor& pixel_color) {
-  if constexpr (!secondary_rays) return;
+RGBColor recursiveCast(const Ray& incident_ray, const ShadeInfo& incident_ray_sinfo, World& world, const float incident_ray_weight, const int depth) {
+  // Escape condition
+  if (depth >= recursive_casting_depth) return world.bg_color;
 
   // Determine direction of secondary ray
   const Vector3D a = (incident_ray.d)*(incident_ray_sinfo.normal);
@@ -39,14 +40,27 @@ void castSecondaryRays(const Ray& incident_ray, const ShadeInfo& incident_ray_si
 
   if (sec_ray_sinfo.hit)
   {
-    // The secondary ray hit something
+    // The secondary ray hit something, get its color, and cast a tertiary ray
     const float light_intensity = getLightingIntensity(sec_ray_sinfo, world);
     sec_ray_col = sec_ray_sinfo.material_ptr->shade(sec_ray_sinfo) * light_intensity;
+
+    auto reflective_index = sec_ray_sinfo.material_ptr->get_r_index();
+
+    // No point in casting another reflection ray if the material is not reflective at all (index is 0)
+    if (reflective_index > 0) {
+      sec_ray_col += reflective_index * recursiveCast(sec_ray, sec_ray_sinfo, world, incident_ray_weight, depth + 1);
+    }
   }
   else
   {
     sec_ray_col = world.bg_color;
   }
+
+  return sec_ray_col;
+}
+
+void castSecondaryRays(const Ray& incident_ray, const ShadeInfo& incident_ray_sinfo, World& world, const float incident_ray_weight, RGBColor& pixel_color) {
+  const RGBColor sec_ray_col = recursiveCast(incident_ray, incident_ray_sinfo, world, incident_ray_weight, 0);
   pixel_color += incident_ray_weight * brightness_adjustment * incident_ray_sinfo.material_ptr->get_r_index() * sec_ray_col;
 }
 
@@ -112,7 +126,9 @@ int main(int argc, char **argv)
 
           pixel_color += primary_ray_weight * brightness_adjustment * primary_color * light_intensity;
 
-          castSecondaryRays(primary_ray, primary_ray_sinfo, world, primary_ray_weight, pixel_color);
+          if constexpr (secondary_rays) {
+            castSecondaryRays(primary_ray, primary_ray_sinfo, world, primary_ray_weight, pixel_color);
+          }
         }
         else
         {
