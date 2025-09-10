@@ -48,37 +48,33 @@ bool Plane::hit(const Ray &ray, float &t, ShadeInfo &s) const{
     float intersect = 0.0;
 
 
-    if (ray.d * this->n == 0){ //when ray is perpendicular
-        // std::cout << "Plane.cpp:52 - Ray was perpendicular, returning false.\n";
+    if (ray.d * this->n == 0) { // when ray is perpendicular
         return false;
     }
     
-    else{
+    else {
 
-        //calculating t where the ray intersect
+        // calculating t where the ray intersect
         Vector3D numer = this->a - ray.o;    
         intersect = (numer * this->n)/(ray.d * this->n);
 
-        //if intersection happens behind ray
-        if (intersect < 0){
-            // std::cout << "Plane.cpp:64 - Intersection happens behind the ray, returning false.\n";
+        // if intersection happens behind ray
+        if (intersect < 0) {
             return false;
         }
 
-        //if intersection happens in front
-        //return true and make changes to 
+        // intersection happens in front
+        // return true and make changes to 
         // ShadeInfo and t accordingly
-        else if (intersect >= 0){
-            t = intersect;
-            s.hit = true;
-            s.hit_point = ray.o + t * ray.d;
-            s.normal = this->n;
-            s.ray = ray;
-            s.depth += 1;
-            s.t = intersect;
-            s.material_ptr = this->material_ptr;
-            return true;
-        }
+        t = intersect;
+        s.hit = true;
+        s.hit_point = ray.o + t * ray.d;
+        s.normal = this->n;
+        s.ray = ray;
+        s.depth += 1;
+        s.t = intersect;
+        s.material_ptr = this->material_ptr;
+        return true;
     }
     return false;
 }

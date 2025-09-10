@@ -24,6 +24,7 @@ const float kHugeValue = 1.0E10;
 // Some standard colors.
 const RGBColor black(0.0);
 const RGBColor white(1.0);
+const RGBColor gray(0.5, 0.5, 0.5);
 const RGBColor red(1.0, 0.0, 0.0);
 const RGBColor green(0.0, 1.0, 0.0);
 const RGBColor blue(0.0, 0.0, 1.0);

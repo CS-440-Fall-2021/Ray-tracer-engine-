@@ -2,24 +2,19 @@
 #include <chrono>
 
 #include "materials/Cosine.hpp"
-
 #include "samplers/Sampler.hpp"
-
 #include "utilities/Image.hpp"
 #include "utilities/RGBColor.hpp"
 #include "utilities/Ray.hpp"
 #include "utilities/ShadeInfo.hpp"
-
 #include "world/World.hpp"
 #include "world/ViewPlane.hpp"
-
 #include "lenses/Lens.hpp"
-
 #include "geometry/Plane.hpp"
+#include "utilities/Utils.h"
+#include <omp.h>
 
 auto start = std::chrono::high_resolution_clock::now();
-
-int _NPR = NPR;
 
 int main(int argc, char **argv)
 {
@@ -33,140 +28,102 @@ int main(int argc, char **argv)
   Lens *lens = world.lens_ptr;
   Plane &focal_plane = world.lens_ptr->focal_plane;
 
+  int totalProcessedColumns = 0;
+  constexpr int _NPR = blur ? NPR : 1;
 
-  // std::cout << "Focal plane at: " + focal_plane.to_string() + "\n";
-
-  for (int x = 0; x < viewplane.hres; x++) // across.
+  #pragma omp parallel for
+  for (int x = 0; x < viewplane.hres; x++)
   {
-    for (int y = 0; y < viewplane.vres; y++) // down.
+    for (int y = 0; y < viewplane.vres; y++)
     {
-      
       Ray center_ray;
       std::vector<Ray> primary_rays;
-      
-      if (y % 100 == 0) {
-        std::cout << "ViewPlane pixel: " + std::to_string(x) + ", " + std::to_string(y) + "\n";
-      }
-      
       RGBColor pixel_color(0);
 
       center_ray = sampler->get_center_ray(x, y);
 
-      // std::cout << "Center Ray: " + center_ray.to_string() + "\n";
-
       float t = 0;
-      ShadeInfo sinfo(world);
-      bool hit = focal_plane.hit(center_ray, t, sinfo);
+      ShadeInfo center_ray_sinfo(world);
+      focal_plane.hit(center_ray, t, center_ray_sinfo);
 
-      // std::cout << "Hit: " + std::to_string(hit) + "\n";
+      // Pf = The point where the center ray hits the focal plane
+      Point3D Pf = center_ray_sinfo.hit_point;
 
-      Point3D Pf = sinfo.hit_point;
-
-      // std::cout << "Center ray hit point (Pf): " + Pf.to_string() + "\n";
-      // std::cout << "Center ray hit point (t): " + std::to_string(t) + "\n";
-
-      // Generate primary rays from Pi to Pf
-      // where Pi is a random point on the lens
-
-      // std::cout << "Generating Primary Rays...\n";
-      if (!blur) {
-        _NPR = 1;
-      }
-      
+      // Generate primary rays
+      // from the lens to the Pf
       for (int i = 0; i < _NPR; i++)
       {
-        Point3D origin;
-        
-        if (blur) {
-          origin = lens->get_random_point();
-        } else {
-          origin = lens->origin;
-        }
-
-        Vector3D direction = (Pf - origin);
-
+        Point3D origin = blur ? lens->get_random_point() : lens->origin;
+        Vector3D direction = Pf - origin;
         Ray r(origin, direction);
-        // r.w = (1.0 / NPR) * (lens.radius - (lens.origin.distance(origin))) / lens.radius;
-        r.w = (1.0 / _NPR);
 
-        // if (i == 4) {
-        //   std::cout << "Primary Ray #5:\n" + r.to_string() + "\n";
-        // }
+        r.w = static_cast<float>(1.0 / _NPR);
 
         primary_rays.push_back(r);
       }
 
-      // std::cout << "Generated " + std::to_string(primary_rays.size()) + " primary rays\n";
-      
-
-      // std::cout << "Firing rays into the world...\n";
       for (const auto &ray : primary_rays)
       {
-        float weight = ray.w; // ray weight for the pixel.
-        ShadeInfo sinfo = world.hit_objects(ray);
+        float weight = ray.w;
+        ShadeInfo primary_ray_sinfo = world.hit_objects(ray);
         
-        if (sinfo.hit)
+        // The primary ray hit something
+        if (primary_ray_sinfo.hit)
         {
-          if (!secondary_rays) {
+          RGBColor primary_color = primary_ray_sinfo.material_ptr->shade(primary_ray_sinfo);
+          float light_intensity_1 = 1;
+          if (lighting) {
+            light_intensity_1 = world.get_light_value(primary_ray_sinfo.hit_point, primary_ray_sinfo.normal);
+          }
+          primary_color *= light_intensity_1;
+          pixel_color += weight * brightness_adjustment * primary_color;
+
+          if constexpr (!secondary_rays) {
             
             float light_val;
 
             if (lighting) {
               // Cast Shadow Ray
-              light_val = world.get_light_value(sinfo.hit_point);
+              light_val = world.get_light_value(primary_ray_sinfo.hit_point, primary_ray_sinfo.normal);
             } else {
               light_val = 1;
             }
 
-            pixel_color += light_val * weight * sinfo.material_ptr->shade(sinfo);
+            pixel_color += light_val * weight * primary_ray_sinfo.material_ptr->shade(primary_ray_sinfo);
 
           } else {
             // Determine direction of secondary ray
-            Vector3D a = (ray.d)*(sinfo.normal);
-            Vector3D b = 2*((a)*(sinfo.normal));
-            Vector3D c = b - ray.d;
-            c.normalize();
+            Vector3D a = (ray.d)*(primary_ray_sinfo.normal);
+            Vector3D b = 2*((a)*(primary_ray_sinfo.normal));
+            Vector3D sec_ray_dir = ray.d - b;
+            sec_ray_dir.normalize();
 
-            // Determine secondary ray's color
-            RGBColor ray_col = sinfo.material_ptr->shade(sinfo);
-            float light_val1;
-            if (lighting) {
-              light_val1 = world.get_light_value(sinfo.hit_point);
-            } else {
-              light_val1 = 1;
-            }
-            ray_col = light_val1 * ray_col;
+            // Cast secondary ray
+            Point3D primary_ray_hit_point = primary_ray_sinfo.hit_point + sec_ray_dir * kEpsilon;
+            auto sec = Ray(primary_ray_hit_point, sec_ray_dir);
+            ShadeInfo sec_ray_sinfo = world.hit_objects(sec);
 
-            Point3D hp = sinfo.hit_point;
+            RGBColor sec_ray_col;
 
-            // Generate secondary ray
-            Ray sec = Ray(hp, c, ray_col);
-
-            // Release secondary ray into the world
-            ShadeInfo sinfo_sec = world.hit_objects(sec);
-
-            if (sinfo_sec.hit)
+            if (sec_ray_sinfo.hit)
             {
-              // std::cout << "Secondary Ray: HIT. Color: " + sinfo_sec.material_ptr->shade(sinfo_sec).to_string() + "\n";
-
-              float light_val2;
+              float light_intensity_2 = 1;
               if (lighting) {
-                light_val2 = world.get_light_value(sinfo_sec.hit_point, false);
-              } else {
-                light_val2 = 1;
+                light_intensity_2 = world.get_light_value(sec_ray_sinfo.hit_point, sec_ray_sinfo.normal);
               }
-
-              // pixel_color += weight * ((0.5 * light_val2 * sinfo_sec.material_ptr->shade(sinfo_sec)) + (0.5 * ray_col));
-              pixel_color += brightness_adjustment * weight * ((sinfo.material_ptr->get_r_index() * light_val2 * sinfo_sec.material_ptr->shade(sinfo_sec)) + (sinfo.material_ptr->get_inc_index() * ray_col));
+              sec_ray_col = sec_ray_sinfo.material_ptr->shade(sec_ray_sinfo) * light_intensity_2;
             }
             else
             {
-              pixel_color += weight * brightness_adjustment * ray_col;
+              // The secondary ray did not hit anything
+              sec_ray_col = world.bg_color;
             }
+            pixel_color += weight * brightness_adjustment * primary_ray_sinfo.material_ptr->get_r_index() * sec_ray_col;
           }
         }
         else
         {
+          // The primary ray did not hit anything
           pixel_color += weight * world.bg_color;
         }
         
@@ -174,18 +131,23 @@ int main(int argc, char **argv)
       // Save color to image.
       image.set_pixel(x, y, pixel_color);
     }
+    totalProcessedColumns += 1;
+    std::cout << "Total processed columns: " << totalProcessedColumns << "\n";
   }
 
   std::cout << "Raytracing complete.\n";
 
   // Write image to file.
   float lens_to_vp = lens->origin.z - viewplane.top_left.z;
-  std::string filename;
-  if (blur) {
-    filename = std::to_string(viewplane.hres) + "x" + std::to_string(viewplane.vres) + " - blur - " + std::to_string(NPR) + "NPR - URD - r" + std::to_string((int)lens->radius) + " - lens depth" +  std::to_string((int)lens_to_vp) + ".ppm";
-  } else {
-    filename = std::to_string(viewplane.hres) + "x" + std::to_string(viewplane.vres) + " - no blur - " + std::to_string(NPR) + "NPR - URD - r" + std::to_string((int)lens->radius) + " - lens depth" +  std::to_string((int)lens_to_vp) + ".ppm";
-  }
+  std::string filename = generateFileName(
+    viewplane.hres,
+    viewplane.vres,
+    blur,
+    _NPR,
+    secondary_rays,
+    lens->radius,
+    lens_to_vp
+  );
   image.write_ppm(filename);
 
   std::cout << "Wrote image.\n";

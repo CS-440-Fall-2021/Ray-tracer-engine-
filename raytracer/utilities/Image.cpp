@@ -35,13 +35,10 @@ void Image::set_pixel(int x, int y, const RGBColor& color) {
 }
 
 Image::~Image() {
-    this->vres = 0;
-    this->hres = 0;
     for (int i = 0; i < hres; i++)
     {
         free(colors[i]);
     }
-    free(colors);
 }
 
 void Image::write_ppm(std::string path) const {

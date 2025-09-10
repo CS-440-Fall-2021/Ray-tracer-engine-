@@ -70,17 +70,17 @@ bool Triangle::hit(const Ray &ray, float &t, ShadeInfo &s) const{
     normal.normalize();
 
     //if ray and plane are parallel
-    if (ray.d * normal == 0){
+    if (ray.d * normal == 0) {
         return false;
     }
 
     //if they do intersect
-    else{
+    else {
         //calculating t
         intersect = ((Vector3D(ray.o) * normal)+ Vector3D(v0)*normal)/(ray.d * normal);
         
         //if intersection happened behind the ray
-        if (intersect <= 0){
+        if (intersect <= 0) {
             return false;
         }
         
@@ -93,23 +93,22 @@ bool Triangle::hit(const Ray &ray, float &t, ShadeInfo &s) const{
 
 
         //if point of intersection inside triangle
-        if (intersect > 0 && 
-                normal * (edge1 ^ point1) > 0 &&
-                normal * (edge2 ^ point2) > 0 &&
-                normal * (edge3 ^ point3) > 0){
-            t = intersect;
-            s.hit = true;
-            s.hit_point = point;
-            s.normal = normal;
-            s.ray = ray;
-            s.depth += 1;
-            s.t = intersect;
-            s.material_ptr = this->material_ptr;
-            return true;
+        if (normal * (edge1 ^ point1) > 0 &&
+            normal * (edge2 ^ point2) > 0 &&
+            normal * (edge3 ^ point3) > 0) {
+                t = intersect;
+                s.hit = true;
+                s.hit_point = point;
+                s.normal = normal;
+                s.ray = ray;
+                s.depth += 1;
+                s.t = intersect;
+                s.material_ptr = this->material_ptr;
+                return true;
         }
 
         //else since intersection outside triangle
-        else{
+        else {
             return false;
         }
     }
