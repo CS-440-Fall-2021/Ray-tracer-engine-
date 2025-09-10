@@ -50,6 +50,29 @@ void castSecondaryRays(const Ray& primary_ray, const ShadeInfo& primary_ray_sinf
   pixel_color += primary_ray_weight * brightness_adjustment * primary_ray_sinfo.material_ptr->get_r_index() * sec_ray_col;
 }
 
+void generatePrimaryRays(const int x, const int y, const Sampler *sampler, const World& world, const Plane& focal_plane, const int _NPR, Lens* lens, std::vector<Ray>& primary_rays) {
+  const Ray center_ray = sampler->get_center_ray(x, y);
+
+  float t = 0;
+  ShadeInfo center_ray_sinfo(world);
+  focal_plane.hit(center_ray, t, center_ray_sinfo);
+
+  // Pf = The point where the center ray hits the focal plane
+  const Point3D Pf = center_ray_sinfo.hit_point;
+
+  // Generate primary rays
+  // from the lens to the Pf
+  for (int i = 0; i < _NPR; i++)
+  {
+    Point3D origin = blur ? lens->get_random_point() : lens->origin;
+    Vector3D direction = Pf - origin;
+    Ray r(origin, direction);
+
+    r.w = static_cast<float>(1.0 / _NPR);
+
+    primary_rays.push_back(r);
+  }
+}
 
 int main(int argc, char **argv)
 {
@@ -71,31 +94,10 @@ int main(int argc, char **argv)
   {
     for (int y = 0; y < viewplane.vres; y++)
     {
-      Ray center_ray;
       std::vector<Ray> primary_rays;
       RGBColor pixel_color(0);
 
-      center_ray = sampler->get_center_ray(x, y);
-
-      float t = 0;
-      ShadeInfo center_ray_sinfo(world);
-      focal_plane.hit(center_ray, t, center_ray_sinfo);
-
-      // Pf = The point where the center ray hits the focal plane
-      Point3D Pf = center_ray_sinfo.hit_point;
-
-      // Generate primary rays
-      // from the lens to the Pf
-      for (int i = 0; i < _NPR; i++)
-      {
-        Point3D origin = blur ? lens->get_random_point() : lens->origin;
-        Vector3D direction = Pf - origin;
-        Ray r(origin, direction);
-
-        r.w = static_cast<float>(1.0 / _NPR);
-
-        primary_rays.push_back(r);
-      }
+      generatePrimaryRays(x, y, sampler, world, focal_plane, _NPR, lens, primary_rays);
 
       for (const auto &primary_ray : primary_rays)
       {
