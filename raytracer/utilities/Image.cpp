@@ -27,11 +27,8 @@ Image::Image(const ViewPlane &vp) {
     }
 }
 
-void Image::set_pixel(int x, int y, const RGBColor& color) {
-    colors[x][y] = RGBColor();
-    colors[x][y].r = color.r;
-    colors[x][y].g = color.g;
-    colors[x][y].b = color.b;
+void Image::set_pixel(const int x, const int y, const RGBColor& color) const {
+    colors[x][y] = RGBColor(color);
 }
 
 Image::~Image() {

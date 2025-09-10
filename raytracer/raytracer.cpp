@@ -88,7 +88,33 @@ void generatePrimaryRays(const int x, const int y, const Sampler *sampler, const
   }
 }
 
-int main(int argc, char **argv)
+void castPrimaryRays(const std::vector<Ray>& primary_rays, World& world, RGBColor& pixel_color) {
+  for (const auto &primary_ray : primary_rays)
+  {
+    const float primary_ray_weight = primary_ray.w;
+    ShadeInfo primary_ray_sinfo = world.hit_objects(primary_ray);
+
+    // The primary ray hit something
+    if (primary_ray_sinfo.hit)
+    {
+      RGBColor primary_color = primary_ray_sinfo.material_ptr->shade(primary_ray_sinfo);
+      const float light_intensity = getLightingIntensity(primary_ray_sinfo, world);
+
+      pixel_color += primary_ray_weight * brightness_adjustment * primary_color * light_intensity * primary_ray_sinfo.material_ptr->get_inc_index();
+
+      if constexpr (secondary_rays) {
+        castSecondaryRays(primary_ray, primary_ray_sinfo, world, primary_ray_weight, pixel_color);
+      }
+    }
+    else
+    {
+      // The primary ray did not hit anything
+      pixel_color += primary_ray_weight * world.bg_color;
+    }
+  }
+}
+
+int main()
 {
   World world;
   world.build();
@@ -112,30 +138,8 @@ int main(int argc, char **argv)
       RGBColor pixel_color(0);
 
       generatePrimaryRays(x, y, sampler, world, focal_plane, _NPR, lens, primary_rays);
+      castPrimaryRays(primary_rays, world, pixel_color);
 
-      for (const auto &primary_ray : primary_rays)
-      {
-        float primary_ray_weight = primary_ray.w;
-        ShadeInfo primary_ray_sinfo = world.hit_objects(primary_ray);
-        
-        // The primary ray hit something
-        if (primary_ray_sinfo.hit)
-        {
-          RGBColor primary_color = primary_ray_sinfo.material_ptr->shade(primary_ray_sinfo);
-          float light_intensity = getLightingIntensity(primary_ray_sinfo, world);
-
-          pixel_color += primary_ray_weight * brightness_adjustment * primary_color * light_intensity * primary_ray_sinfo.material_ptr->get_inc_index();
-
-          if constexpr (secondary_rays) {
-            castSecondaryRays(primary_ray, primary_ray_sinfo, world, primary_ray_weight, pixel_color);
-          }
-        }
-        else
-        {
-          // The primary ray did not hit anything
-          pixel_color += primary_ray_weight * world.bg_color;
-        }
-      }
       // Save color to image.
       image.set_pixel(x, y, pixel_color);
     }

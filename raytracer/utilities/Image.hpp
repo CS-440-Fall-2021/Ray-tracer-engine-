@@ -26,7 +26,7 @@ public:
   ~Image(); // free memory.
 
   // Set pixel color. Convert to integer values.
-  void set_pixel(int x, int y, const RGBColor& color);
+  void set_pixel(int x, int y, const RGBColor& color) const;
 
   // Write image to file in PPM format.
   void write_ppm(std::string path) const;
