@@ -21,19 +21,19 @@ float getLightingIntensity(const ShadeInfo& primary_ray_sinfo, World& world) {
   return world.get_light_value(primary_ray_sinfo.hit_point, primary_ray_sinfo.normal);
 }
 
-void castSecondaryRays(const Ray& primary_ray, const ShadeInfo& primary_ray_sinfo, World& world, const float primary_ray_weight, RGBColor& pixel_color) {
+void castSecondaryRays(const Ray& incident_ray, const ShadeInfo& incident_ray_sinfo, World& world, const float incident_ray_weight, RGBColor& pixel_color) {
   if constexpr (!secondary_rays) return;
 
   // Determine direction of secondary ray
-  const Vector3D a = (primary_ray.d)*(primary_ray_sinfo.normal);
-  const Vector3D b = 2*((a)*(primary_ray_sinfo.normal));
-  Vector3D sec_ray_dir = primary_ray.d - b;
+  const Vector3D a = (incident_ray.d)*(incident_ray_sinfo.normal);
+  const Vector3D b = 2*((a)*(incident_ray_sinfo.normal));
+  Vector3D sec_ray_dir = incident_ray.d - b;
   sec_ray_dir.normalize();
 
   // Cast secondary ray
-  const Point3D primary_ray_hit_point = primary_ray_sinfo.hit_point + sec_ray_dir * kEpsilon;
-  const auto sec = Ray(primary_ray_hit_point, sec_ray_dir);
-  const ShadeInfo sec_ray_sinfo = world.hit_objects(sec);
+  const Point3D incident_ray_hit_point = incident_ray_sinfo.hit_point + incident_ray_sinfo.normal * kEpsilon;
+  const auto sec_ray = Ray(incident_ray_hit_point, sec_ray_dir);
+  const ShadeInfo sec_ray_sinfo = world.hit_objects(sec_ray);
 
   RGBColor sec_ray_col;
 
@@ -47,7 +47,7 @@ void castSecondaryRays(const Ray& primary_ray, const ShadeInfo& primary_ray_sinf
   {
     sec_ray_col = world.bg_color;
   }
-  pixel_color += primary_ray_weight * brightness_adjustment * primary_ray_sinfo.material_ptr->get_r_index() * sec_ray_col;
+  pixel_color += incident_ray_weight * brightness_adjustment * incident_ray_sinfo.material_ptr->get_r_index() * sec_ray_col;
 }
 
 void generatePrimaryRays(const int x, const int y, const Sampler *sampler, const World& world, const Plane& focal_plane, const int _NPR, Lens* lens, std::vector<Ray>& primary_rays) {
@@ -119,7 +119,6 @@ int main(int argc, char **argv)
           // The primary ray did not hit anything
           pixel_color += primary_ray_weight * world.bg_color;
         }
-        
       }
       // Save color to image.
       image.set_pixel(x, y, pixel_color);
