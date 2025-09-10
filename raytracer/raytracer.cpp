@@ -16,6 +16,41 @@
 
 auto start = std::chrono::high_resolution_clock::now();
 
+float getLightingIntensity(const ShadeInfo& primary_ray_sinfo, World& world) {
+  if constexpr (!lighting) return 1;
+  return world.get_light_value(primary_ray_sinfo.hit_point, primary_ray_sinfo.normal);
+}
+
+void castSecondaryRays(const Ray& primary_ray, const ShadeInfo& primary_ray_sinfo, World& world, const float primary_ray_weight, RGBColor& pixel_color) {
+  if constexpr (!secondary_rays) return;
+
+  // Determine direction of secondary ray
+  const Vector3D a = (primary_ray.d)*(primary_ray_sinfo.normal);
+  const Vector3D b = 2*((a)*(primary_ray_sinfo.normal));
+  Vector3D sec_ray_dir = primary_ray.d - b;
+  sec_ray_dir.normalize();
+
+  // Cast secondary ray
+  const Point3D primary_ray_hit_point = primary_ray_sinfo.hit_point + sec_ray_dir * kEpsilon;
+  const auto sec = Ray(primary_ray_hit_point, sec_ray_dir);
+  const ShadeInfo sec_ray_sinfo = world.hit_objects(sec);
+
+  RGBColor sec_ray_col;
+
+  if (sec_ray_sinfo.hit)
+  {
+    // The secondary ray hit something
+    const float light_intensity = getLightingIntensity(sec_ray_sinfo, world);
+    sec_ray_col = sec_ray_sinfo.material_ptr->shade(sec_ray_sinfo) * light_intensity;
+  }
+  else
+  {
+    sec_ray_col = world.bg_color;
+  }
+  pixel_color += primary_ray_weight * brightness_adjustment * primary_ray_sinfo.material_ptr->get_r_index() * sec_ray_col;
+}
+
+
 int main(int argc, char **argv)
 {
   World world;
@@ -62,69 +97,25 @@ int main(int argc, char **argv)
         primary_rays.push_back(r);
       }
 
-      for (const auto &ray : primary_rays)
+      for (const auto &primary_ray : primary_rays)
       {
-        float weight = ray.w;
-        ShadeInfo primary_ray_sinfo = world.hit_objects(ray);
+        float primary_ray_weight = primary_ray.w;
+        ShadeInfo primary_ray_sinfo = world.hit_objects(primary_ray);
         
         // The primary ray hit something
         if (primary_ray_sinfo.hit)
         {
           RGBColor primary_color = primary_ray_sinfo.material_ptr->shade(primary_ray_sinfo);
-          float light_intensity_1 = 1;
-          if (lighting) {
-            light_intensity_1 = world.get_light_value(primary_ray_sinfo.hit_point, primary_ray_sinfo.normal);
-          }
-          primary_color *= light_intensity_1;
-          pixel_color += weight * brightness_adjustment * primary_color;
+          float light_intensity = getLightingIntensity(primary_ray_sinfo, world);
 
-          if constexpr (!secondary_rays) {
-            
-            float light_val;
+          pixel_color += primary_ray_weight * brightness_adjustment * primary_color * light_intensity;
 
-            if (lighting) {
-              // Cast Shadow Ray
-              light_val = world.get_light_value(primary_ray_sinfo.hit_point, primary_ray_sinfo.normal);
-            } else {
-              light_val = 1;
-            }
-
-            pixel_color += light_val * weight * primary_ray_sinfo.material_ptr->shade(primary_ray_sinfo);
-
-          } else {
-            // Determine direction of secondary ray
-            Vector3D a = (ray.d)*(primary_ray_sinfo.normal);
-            Vector3D b = 2*((a)*(primary_ray_sinfo.normal));
-            Vector3D sec_ray_dir = ray.d - b;
-            sec_ray_dir.normalize();
-
-            // Cast secondary ray
-            Point3D primary_ray_hit_point = primary_ray_sinfo.hit_point + sec_ray_dir * kEpsilon;
-            auto sec = Ray(primary_ray_hit_point, sec_ray_dir);
-            ShadeInfo sec_ray_sinfo = world.hit_objects(sec);
-
-            RGBColor sec_ray_col;
-
-            if (sec_ray_sinfo.hit)
-            {
-              float light_intensity_2 = 1;
-              if (lighting) {
-                light_intensity_2 = world.get_light_value(sec_ray_sinfo.hit_point, sec_ray_sinfo.normal);
-              }
-              sec_ray_col = sec_ray_sinfo.material_ptr->shade(sec_ray_sinfo) * light_intensity_2;
-            }
-            else
-            {
-              // The secondary ray did not hit anything
-              sec_ray_col = world.bg_color;
-            }
-            pixel_color += weight * brightness_adjustment * primary_ray_sinfo.material_ptr->get_r_index() * sec_ray_col;
-          }
+          castSecondaryRays(primary_ray, primary_ray_sinfo, world, primary_ray_weight, pixel_color);
         }
         else
         {
           // The primary ray did not hit anything
-          pixel_color += weight * world.bg_color;
+          pixel_color += primary_ray_weight * world.bg_color;
         }
         
       }
