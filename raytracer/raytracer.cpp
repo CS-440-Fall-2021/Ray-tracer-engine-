@@ -42,7 +42,7 @@ RGBColor recursiveCast(const Ray& incident_ray, const ShadeInfo& incident_ray_si
   {
     // The secondary ray hit something, get its color, and cast a tertiary ray
     const float light_intensity = getLightingIntensity(sec_ray_sinfo, world);
-    sec_ray_col = sec_ray_sinfo.material_ptr->shade(sec_ray_sinfo) * light_intensity;
+    sec_ray_col = sec_ray_sinfo.material_ptr->shade(sec_ray_sinfo) * light_intensity * sec_ray_sinfo.material_ptr->get_inc_index();
 
     auto reflective_index = sec_ray_sinfo.material_ptr->get_r_index();
 
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
           RGBColor primary_color = primary_ray_sinfo.material_ptr->shade(primary_ray_sinfo);
           float light_intensity = getLightingIntensity(primary_ray_sinfo, world);
 
-          pixel_color += primary_ray_weight * brightness_adjustment * primary_color * light_intensity;
+          pixel_color += primary_ray_weight * brightness_adjustment * primary_color * light_intensity * primary_ray_sinfo.material_ptr->get_inc_index();
 
           if constexpr (secondary_rays) {
             castSecondaryRays(primary_ray, primary_ray_sinfo, world, primary_ray_weight, pixel_color);
