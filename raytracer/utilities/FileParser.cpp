@@ -9,9 +9,11 @@
 
 #include "BBox.hpp"
 #include "Constants.hpp"
+#include "Cosine.hpp"
 #include "FileReader.h"
 #include "Glossy.hpp"
 #include "Light.hpp"
+#include "Matte.hpp"
 #include "Plane.hpp"
 #include "Sphere.hpp"
 #include "Utils.h"
@@ -53,14 +55,20 @@ void buildAndPushSphere(const std::vector<std::string> &tokens, std::vector<Geom
     const float color_g = std::stof(tokens[7]);
     const float color_b = std::stof(tokens[8]);
 
-    Point3D origin(origin_x, origin_y, origin_z);
+    const Point3D origin(origin_x, origin_y, origin_z);
     auto *sphere = new Sphere(origin, radius);
 
     if (material == "glossy") {
         auto *glossy = new Glossy(color_r, color_g, color_b);
         sphere->set_material(glossy);
+    } else if (material == "matte") {
+        auto *matte = new Matte(color_r, color_g, color_b);
+        sphere->set_material(matte);
+    } else if (material == "cosine") {
+        auto *cosine = new Cosine(color_r, color_g, color_b);
+        sphere->set_material(cosine);
     } else {
-        std::cerr << "Unkown material: " << material << std::endl;
+        std::cerr << "Unknown material: " << material << std::endl;
     }
 
     geometry.push_back(sphere);
