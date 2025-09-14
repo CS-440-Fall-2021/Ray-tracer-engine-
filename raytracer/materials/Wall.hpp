@@ -9,8 +9,8 @@ protected:
   RGBColor color; // the color of the material.
 
 public:
-  float r_ind = 0.75;    // specify significance for the color of the reflected ray
-  float inc_ind = 0.25;  // // specify significance for the color of the incident ray
+  float r_ind = 0.1;    // specify significance for the color of the reflected ray
+  float inc_ind = 0.9;  // // specify significance for the color of the incident ray
   // Constructors.
   Wall();                          // set color to (0, 0, 0).
   Wall(float c);                   // set color to (c, c, c).

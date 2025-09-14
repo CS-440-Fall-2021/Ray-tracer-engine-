@@ -7,8 +7,8 @@ Matte::Matte() {
     color.r = 0;
     color.g = 0;
     color.b = 0;
-    r_ind = 0.25;
-    inc_ind = 0.75;
+    r_ind = 0.1;
+    inc_ind = 0.9;
 
 }
 
@@ -16,8 +16,8 @@ Matte::Matte(float c) {
     color.r = c;
     color.g = c;
     color.b = c;
-    r_ind = 0.25;
-    inc_ind = 0.75;
+    r_ind = 0.1;
+    inc_ind = 0.9;
 
 }
 
@@ -25,15 +25,15 @@ Matte::Matte(float r, float g, float b) {
     color.r = r;
     color.g = g;
     color.b = b;
-    r_ind = 0.25;
-    inc_ind = 0.75;
+    r_ind = 0.1;
+    inc_ind = 0.9;
 
 }
 
 Matte::Matte(const RGBColor &c) {
     color = c;
-    r_ind = 0.25;
-    inc_ind = 0.75;
+    r_ind = 0.1;
+    inc_ind = 0.9;
 }
 
 Matte::Matte(const Matte &other) {
