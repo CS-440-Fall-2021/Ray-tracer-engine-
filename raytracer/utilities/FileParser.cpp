@@ -25,6 +25,9 @@ void buildWorldFromFile(const std::string &filename, std::vector<Geometry *> &ge
     const auto lines = getLinesFromFile(filename);
 
     for (const auto &line: lines) {
+        if (line[0] == '/' && line[1] == '/') continue;
+        if (line.empty()) continue;
+
         auto tokens = split(line, ' ');
 
         const std::string &object = tokens[0];
