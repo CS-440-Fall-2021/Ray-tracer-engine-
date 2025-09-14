@@ -36,8 +36,7 @@ Perspective &Perspective::operator=(const Perspective &other) {
 }
 
 Vector3D Perspective::get_direction(const Point3D &p) const {
-    Vector3D result;
-    result = p - pos;
+    Vector3D result = p - pos;
     result.normalize();
 
     return result;

@@ -34,8 +34,7 @@ Point3D Lens::get_random_point() {
 }
 
 Vector3D Lens::get_direction(const Point3D &p) {
-    Vector3D result;
-    result = p - origin;
+    Vector3D result = p - origin;
     result.normalize();
 
     return result;
