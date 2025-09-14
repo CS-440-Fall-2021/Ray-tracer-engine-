@@ -52,22 +52,21 @@ bool Sphere::hit(const Ray &ray, float &t, ShadeInfo &s) const{
     
     
     // initialising quadratic equation values
-    
-    float _a = ray.d * ray.d;  
-    float _b = 2 * ray.d * Vector3D(ray.o- this->c); 
-    float _c = Vector3D(ray.o-this->c) * Vector3D(ray.o-this->c) - this->r* this->r;
-    
-    float det = _b * _b - 4 * _a * _c;
+    constexpr double a = 1; // the dot product of two unit vectors is 1
+    const double b = 2 * ray.d * Vector3D(ray.o - this->c);
+    const double c = Vector3D(ray.o-this->c) * Vector3D(ray.o-this->c) - this->r* this->r;
+
+    const double det = b * b - 4 * a * c;
     
     // case when ray doesn't intersect
-    if (det < 0){
+    if (det < 0) {
         return false;
     }
     
     //case when ray has one intersection
-    else if (det == 0){
+    if (det == 0) {
     
-        t = (-_b-sqrt(det))/(2*_a) ;
+        t = static_cast<float> (-b / (2*a));
     
         s.hit = true;
         s.hit_point = ray.o + t * ray.d;
@@ -79,48 +78,45 @@ bool Sphere::hit(const Ray &ray, float &t, ShadeInfo &s) const{
 
         s.ray = ray;
         s.depth += 1;
-        s.t = (-sqrt(det) - _b)/(2*_a);
+        s.t = t;
         s.material_ptr = this->material_ptr;
         return true;
     }
 
     //case when there are two intersection
-    else{
-        float t1 = (-sqrt(det) - _b)/(2*_a);
-        float t2 = (sqrt(det) - _b)/(2*_a);
+    if (det > 0) {
+        const double t1 = (-b - sqrt(det)) / (2*a);
+        const double t2 = (-b + sqrt(det)) / (2*a);
         
         //we only concern ourselves with positive values of t
         //and choose the one closest i.e minimum
-        if (t1 < 0 && t2 < 0){
+        if (t1 < 0 && t2 < 0) {
             return false;
         }
-        else {
-        
-            if (t1 >= 0 && t2 < 0){
-                t = t1 ;
-                
-            }
-            else if (t1 < 0 && t2 >= 0){
-                t = t2 ;
-                
-            }
-            else{
-                t= std::min(t1,t2);
-            }
-            s.hit = true;
-            s.hit_point = ray.o + t * ray.d;
-            
-            //calculating normal
-            Vector3D normal = (s.hit_point - this->c);
-            normal.normalize();
-            s.normal = normal;
 
-            s.ray = ray;
-            s.depth += 1;
-            s.t = t;
-            s.material_ptr = this->material_ptr;
-            return true;
+        if (t1 >= 0 && t2 < 0) {
+            t = static_cast<float>(t1);
         }
+        else if (t1 < 0 && t2 >= 0) {
+            t = static_cast<float>(t2);
+        }
+        else {
+            t = static_cast<float>(std::min(t1, t2));
+        }
+
+        s.hit = true;
+        s.hit_point = ray.o + t * ray.d;
+
+        //calculating normal
+        Vector3D normal = (s.hit_point - this->c);
+        normal.normalize();
+        s.normal = normal;
+
+        s.ray = ray;
+        s.depth += 1;
+        s.t = t;
+        s.material_ptr = this->material_ptr;
+        return true;
     }
     return false;
 }
