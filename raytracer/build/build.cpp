@@ -4,6 +4,8 @@
    Parallel viewing is used with a single sample per pixel.
 */
 #include "FileParser.h"
+#include "Matte.hpp"
+#include "Triangle.hpp"
 #include "World.hpp"
 #include "../acceleration/Accelerator.hpp"
 #include "../cameras/Parallel.hpp"
@@ -21,10 +23,10 @@ void World::build() {
     // View plane
     vplane.top_left.x = -15;
     vplane.top_left.y = 15;
-    vplane.top_left.z = -30;
+    vplane.top_left.z = -10;
     vplane.bottom_right.x = 15;
     vplane.bottom_right.y = -15;
-    vplane.bottom_right.z = -30;
+    vplane.bottom_right.z = -10;
     vplane.hres = 1000;
     vplane.vres = 1000;
 
