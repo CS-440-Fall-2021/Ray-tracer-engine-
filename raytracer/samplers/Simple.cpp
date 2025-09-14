@@ -74,21 +74,20 @@ Ray Simple::get_center_ray(int px, int py) const {
     float viewplane_height = (viewplane_ptr->bottom_right.y - viewplane_ptr->top_left.y);
 
     // calculating the dimensions of each viewplane pixel in pixel coordinates
-    float pix_width = viewplane_width / viewplane_ptr->vres;
-    float pix_height= viewplane_height / viewplane_ptr->hres; 
+    float pix_width = viewplane_width / viewplane_ptr->hres;
+    float pix_height= viewplane_height / viewplane_ptr->vres;
 
-    Point3D origin;
+    Point3D middle_of_viewplane_pixel;
     
-    // mapping the physical pixel to the viewplane pixel
-    origin.x = midpx * pix_width + viewplane_ptr->top_left.x;
-    origin.y = midpy * pix_height + viewplane_ptr->top_left.y;
-    origin.z = viewplane_ptr->top_left.z;
+    // converting the 2D viewplane pixel into world coordinates
+    middle_of_viewplane_pixel.x = midpx * pix_width + viewplane_ptr->top_left.x;
+    middle_of_viewplane_pixel.y = midpy * pix_height + viewplane_ptr->top_left.y;
+    middle_of_viewplane_pixel.z = viewplane_ptr->top_left.z;
 
-    // Get direction of vector from camera origin to pixel origin on viewplane
-    Vector3D direction;
-    direction = lens_ptr->get_direction(origin);
+    // Get direction of vector from lens origin to pixel origin on viewplane
+    const Vector3D direction = lens_ptr->get_direction(middle_of_viewplane_pixel);
 
-    Ray r(origin, direction);
+    const Ray r(lens_ptr->origin, direction);
 
     return r;
 }
