@@ -16,25 +16,39 @@
 
 auto start = std::chrono::high_resolution_clock::now();
 
-float getLightingIntensity(const ShadeInfo& primary_ray_sinfo, World& world) {
+float getLightingIntensity(const ShadeInfo& incident_ray_sinfo, World& world, const bool debug = false) {
   if constexpr (!lighting) return 1;
-  return world.get_light_value(primary_ray_sinfo.hit_point, primary_ray_sinfo.normal);
+  const float lighting_value = world.get_light_value(incident_ray_sinfo.hit_point, incident_ray_sinfo.normal, debug);
+  if (debug) {
+    std::cerr << "Lighting value: " << lighting_value << std::endl;
+  }
+  return lighting_value;
 }
 
-RGBColor recursiveCast(const Ray& incident_ray, const ShadeInfo& incident_ray_sinfo, World& world, const float incident_ray_weight, const int depth) {
+RGBColor recursiveCast(const Ray& incident_ray, ShadeInfo& incident_ray_sinfo, World& world, const float incident_ray_weight, const int depth, bool debug = false) {
+  if (debug) {
+    std::cerr << "Debug Depth: " << depth << std::endl;
+  }
   // Escape condition
   if (depth >= recursive_casting_depth) return world.bg_color;
 
   // Determine direction of secondary ray
-  const Vector3D a = (incident_ray.d)*(incident_ray_sinfo.normal);
-  const Vector3D b = 2*((a)*(incident_ray_sinfo.normal));
-  Vector3D sec_ray_dir = incident_ray.d - b;
+  incident_ray_sinfo.normal.normalize();
+  const double dot = incident_ray.d * incident_ray_sinfo.normal;
+  const double scale = 2 * dot;
+  const Vector3D scaled_normal = scale * incident_ray_sinfo.normal;
+  Vector3D sec_ray_dir = scaled_normal - incident_ray.d;
   sec_ray_dir.normalize();
 
   // Cast secondary ray
-  const Point3D incident_ray_hit_point = incident_ray_sinfo.hit_point + incident_ray_sinfo.normal * kEpsilon;
-  const auto sec_ray = Ray(incident_ray_hit_point, sec_ray_dir);
-  const ShadeInfo sec_ray_sinfo = world.hit_objects(sec_ray);
+  const Point3D sec_ray_origin = incident_ray_sinfo.hit_point + incident_ray_sinfo.normal * kEpsilon;
+  const auto sec_ray = Ray(sec_ray_origin, sec_ray_dir);
+
+  if (debug) {
+    std::cerr << "Casting a secondary ray \n" << sec_ray.to_string() << std::endl;
+  }
+
+  ShadeInfo sec_ray_sinfo = world.hit_objects(sec_ray);
 
   RGBColor sec_ray_col;
 
@@ -44,10 +58,18 @@ RGBColor recursiveCast(const Ray& incident_ray, const ShadeInfo& incident_ray_si
     const float light_intensity = getLightingIntensity(sec_ray_sinfo, world);
     sec_ray_col = sec_ray_sinfo.material_ptr->shade(sec_ray_sinfo) * light_intensity * sec_ray_sinfo.material_ptr->get_inc_index();
 
+    if (debug) {
+      std::cerr << "Secondary ray hit something at " << sec_ray_sinfo.hit_point.to_string() << std::endl;
+      std::cerr << "The attenuated color at this secondary hit point is " << sec_ray_col.to_string() << std::endl;
+    }
+
     auto reflective_index = sec_ray_sinfo.material_ptr->get_r_index();
 
     // No point in casting another reflection ray if the material is not reflective at all (index is 0)
     if (reflective_index > 0) {
+      if (debug) {
+        std::cerr << "The reflective index of the hit material is " << reflective_index << std::endl;
+      }
       sec_ray_col += reflective_index * recursiveCast(sec_ray, sec_ray_sinfo, world, incident_ray_weight, depth + 1);
     }
   }
@@ -59,12 +81,21 @@ RGBColor recursiveCast(const Ray& incident_ray, const ShadeInfo& incident_ray_si
   return sec_ray_col;
 }
 
-void castSecondaryRays(const Ray& incident_ray, const ShadeInfo& incident_ray_sinfo, World& world, const float incident_ray_weight, RGBColor& pixel_color) {
-  const RGBColor sec_ray_col = recursiveCast(incident_ray, incident_ray_sinfo, world, incident_ray_weight, 0);
+void castSecondaryRays(const Ray& incident_ray, ShadeInfo& incident_ray_sinfo, World& world, const float incident_ray_weight, RGBColor& pixel_color, bool debug = false) {
+  const RGBColor sec_ray_col = recursiveCast(incident_ray, incident_ray_sinfo, world, incident_ray_weight, 0, debug);
+
+  // if (debug) {
+  //   std::cerr << "Secondary Ray Hit point color is " << sec_ray_col.to_string() << std::endl;
+  //   std::cerr << "Incident Ray Weight is " << incident_ray_weight << std::endl;
+  //   std::cerr << "Brightness Adjustment is " << brightness_adjustment << std::endl;
+  //   std::cerr << "Incident Ray Incidence Index is " << incident_ray_sinfo.material_ptr->get_inc_index() << std::endl;
+  // }
+
   pixel_color += incident_ray_weight * brightness_adjustment * incident_ray_sinfo.material_ptr->get_r_index() * sec_ray_col;
 }
 
-void generatePrimaryRays(const int x, const int y, const Sampler *sampler, const World& world, const Plane& focal_plane, const int _NPR, Lens* lens, std::vector<Ray>& primary_rays) {
+void generatePrimaryRays(const int x, const int y, const Sampler *sampler, const World &world, const Plane &focal_plane,
+                         const int _NPR, Lens *lens, std::vector<Ray> &primary_rays, bool debug = false) {
   const Ray center_ray = sampler->get_center_ray(x, y);
 
   float t = 0;
@@ -84,11 +115,15 @@ void generatePrimaryRays(const int x, const int y, const Sampler *sampler, const
 
     r.w = static_cast<float>(1.0 / _NPR);
 
+    if (debug) {
+      std::cerr << "Primary ray for (" + stringify(x) + ", " + stringify(y) + ")\n" + r.to_string() << std::endl;
+    }
+
     primary_rays.push_back(r);
   }
 }
 
-void castPrimaryRays(const std::vector<Ray>& primary_rays, World& world, RGBColor& pixel_color) {
+void castPrimaryRays(const std::vector<Ray>& primary_rays, World& world, RGBColor& pixel_color, bool debug = false) {
   for (const auto &primary_ray : primary_rays)
   {
     const float primary_ray_weight = primary_ray.w;
@@ -98,12 +133,21 @@ void castPrimaryRays(const std::vector<Ray>& primary_rays, World& world, RGBColo
     if (primary_ray_sinfo.hit)
     {
       RGBColor primary_color = primary_ray_sinfo.material_ptr->shade(primary_ray_sinfo);
-      const float light_intensity = getLightingIntensity(primary_ray_sinfo, world);
+      const float light_intensity = getLightingIntensity(primary_ray_sinfo, world, debug);
+
+      if (debug) {
+        std::cerr << "Primary ray hit something at " << primary_ray_sinfo.hit_point.to_string() << std::endl;
+        std::cerr << "Hit point color is " << primary_color.to_string() << std::endl;
+        std::cerr << "Lighting intensity is " << light_intensity << std::endl;
+        std::cerr << "Primary Ray Weight is " << primary_ray_weight << std::endl;
+        std::cerr << "Brightness Adjustment is " << brightness_adjustment << std::endl;
+        std::cerr << "Primary Ray Incidence Index is " << primary_ray_sinfo.material_ptr->get_inc_index() << std::endl;
+      }
 
       pixel_color += primary_ray_weight * brightness_adjustment * primary_color * light_intensity * primary_ray_sinfo.material_ptr->get_inc_index();
 
       if constexpr (secondary_rays) {
-        castSecondaryRays(primary_ray, primary_ray_sinfo, world, primary_ray_weight, pixel_color);
+        castSecondaryRays(primary_ray, primary_ray_sinfo, world, primary_ray_weight, pixel_color, debug);
       }
     }
     else
@@ -137,8 +181,13 @@ int main()
       std::vector<Ray> primary_rays;
       RGBColor pixel_color(0);
 
-      generatePrimaryRays(x, y, sampler, world, focal_plane, _NPR, lens, primary_rays);
-      castPrimaryRays(primary_rays, world, pixel_color);
+      if (x == 250 && y == 230) {
+        generatePrimaryRays(x, y, sampler, world, focal_plane, _NPR, lens, primary_rays, true);
+        castPrimaryRays(primary_rays, world, pixel_color, true);
+      } else {
+        generatePrimaryRays(x, y, sampler, world, focal_plane, _NPR, lens, primary_rays, false);
+        castPrimaryRays(primary_rays, world, pixel_color, false);
+      }
 
       // Save color to image.
       image.set_pixel(x, y, pixel_color);

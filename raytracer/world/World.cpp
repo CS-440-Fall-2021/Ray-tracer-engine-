@@ -1,23 +1,18 @@
 #include "World.hpp"
-#include "../cameras/Perspective.hpp"
-#include "../cameras/Parallel.hpp"
-#include "../geometry/Plane.hpp"
-#include "../geometry/Sphere.hpp"
-#include "../geometry/Triangle.hpp"
-#include "../materials/Cosine.hpp"
-#include "../materials/Wall.hpp"
-#include "../materials/Matte.hpp"
-#include "../materials/Glossy.hpp"
-#include "../samplers/Simple.hpp"
-#include "../utilities/Constants.hpp"
-#include "../utilities/ShadeInfo.hpp"
-#include "../lenses/Lens.hpp"
-#include "../utilities/BBox.hpp"
-#include "../acceleration/Accelerator.hpp"
-#include <map>
-#include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
+#include <map>
+#include "../acceleration/Accelerator.hpp"
+#include "../cameras/Parallel.hpp"
+#include "../cameras/Perspective.hpp"
+#include "../geometry/Plane.hpp"
+#include "../lenses/Lens.hpp"
+#include "../materials/Cosine.hpp"
+#include "../samplers/Simple.hpp"
+#include "../utilities/BBox.hpp"
+#include "../utilities/Constants.hpp"
+#include "../utilities/ShadeInfo.hpp"
 
 World::World() {
   // Feel free to override in World::build() as needed.
@@ -101,31 +96,51 @@ ShadeInfo World::unaccel_hit_objects(const Ray& ray, bool hit_walls) {
   return s_min;
 }
 
-float World::get_light_value(const Point3D &hit_point, const Vector3D &normal) {
+float World::get_light_value(const Point3D &hit_point, const Vector3D &normal, const bool debug) {
   const int total_lights = static_cast<int>(lights.size());
   const auto ind_light_weight = static_cast<float>(1.0 / total_lights);
   float light_val = 0;
+
+  if (debug) {
+    std::cerr << "Computing lighting values for point " << hit_point.to_string() << std::endl;
+    std::cerr << "Total lights: " << total_lights << std::endl;
+    std::cerr << "Individual light weight: " << ind_light_weight << std::endl;
+  }
 
   // For each light in the world, cast a shadow ray to it
   // and see if the ray reaches or not.
   for (const Light* light : lights) {
 
-    Vector3D dir = light->origin - hit_point;
-    const auto distance = static_cast<float>(dir.length());
-    dir.normalize();
+    Vector3D shadow_ray_dir = light->origin - hit_point;
+    const auto distance = static_cast<float>(shadow_ray_dir.length());
+    shadow_ray_dir.normalize();
 
     Point3D shadow_ray_origin = hit_point + normal * kEpsilon;
-    Ray shadow_ray(shadow_ray_origin, dir);
+    Ray shadow_ray(shadow_ray_origin, shadow_ray_dir);
+
+    if (debug) {
+      std::cerr << "Shadow ray:\n" << shadow_ray.to_string() << std::endl;
+    }
 
     // If it doesn't hit anything, that means the shadow ray is able to reach the light
     if (hit_objects(shadow_ray).hit == false) {
-      const float angle = static_cast<float>(abs(acos(-dir * light->normal) * 180 / PI));
+      const float angle = static_cast<float>(abs(acos(-shadow_ray_dir * light->normal) * 180 / PI));
 
-      if (angle <= light->fol) {
-        light_val += static_cast<float>(500.0 / pow(distance, 2) * ind_light_weight);
+      const float intensity = 50000.0 / pow(distance, 2);
+      const float diffuse = std::max(0.0, normal * shadow_ray_dir);
+      light_val += intensity * diffuse;
+
+      if (debug) {
+        std::cerr << "Shadow ray reached the light at an angle of " << angle << std::endl;
+        std::cerr << "Intensity: " << intensity << std::endl;
+        std::cerr << "Diffuse: " << diffuse << std::endl;
+        std::cerr << "Light Value: " << light_val << std::endl;
       }
+
+      // if (angle <= light->fol) {
+      //   light_val += static_cast<float>(500.0 / pow(distance, 2) * ind_light_weight);
+      // }
     }
   }
-
   return light_val;
 }
