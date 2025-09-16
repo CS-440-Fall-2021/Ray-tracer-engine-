@@ -1,58 +1,41 @@
 #include "Glossy.hpp"
 #include "../utilities/ShadeInfo.hpp"
-#include <cmath>
-#include <iostream>
 
-Glossy::Glossy() {
+Glossy::Glossy() : Material(0.75) {
     color.r = 0;
     color.g = 0;
     color.b = 0;
-    r_ind = 0.75;
-    inc_ind = 0.25;
 }
 
-Glossy::Glossy(float c) {
+Glossy::Glossy(const float c) : Material(0.75) {
     color.r = c;
     color.g = c;
     color.b = c;
-    r_ind = 0.75;
-    inc_ind = 0.25;
 }
 
-Glossy::Glossy(float r, float g, float b) {
+Glossy::Glossy(const float r, const float g, const float b) : Material(0.75) {
     color.r = r;
     color.g = g;
     color.b = b;
-    r_ind = 0.75;
-    inc_ind = 0.25;
 }
 
-Glossy::Glossy(const RGBColor &c) {
+Glossy::Glossy(const RGBColor &c) : Material(0.75) {
     color = c;
-    r_ind = 0.75;
-    inc_ind = 0.25;
 }
 
-Glossy::Glossy(const Glossy &other) {
+Glossy::Glossy(const Glossy &other)  : Material(other) {
     color = other.color;
-    r_ind = other.r_ind;
-    inc_ind = other.inc_ind;
 }
 
 Glossy &Glossy::operator=(const Glossy &other) {
     color = other.color;
     r_ind = other.r_ind;
-    inc_ind = other.inc_ind;
     return *this;
 }
 
 RGBColor Glossy::shade(const ShadeInfo &sinfo) const {
-    float cos_theta = sinfo.normal * -sinfo.ray.d;
+    const float cos_theta = static_cast<float>(sinfo.normal * -sinfo.ray.d);
     return sinfo.ray.color * color * cos_theta;  
-}
-
-float Glossy::get_inc_index() const {
-    return this->inc_ind;
 }
 
 float Glossy::get_r_index() const {

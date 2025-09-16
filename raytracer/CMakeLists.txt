@@ -25,8 +25,8 @@ add_executable(raytracer
         acceleration/Accelerator.hpp
         build/build.cpp
         cameras/Camera.hpp
-        cameras/Parallel.cpp
-        cameras/Parallel.hpp
+#        cameras/Parallel.cpp
+#        cameras/Parallel.hpp
         cameras/Perspective.cpp
         cameras/Perspective.hpp
         geometry/Geometry.cpp

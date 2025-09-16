@@ -14,32 +14,29 @@
 
 #include "../utilities/RGBColor.hpp"
 
-class Cosine : public Material {
+class Cosine final : public Material {
 protected:
   RGBColor color; // the color of the material.
 
 public:
-  float r_ind = 0.5;    // specify significance for the color of the reflected ray
-  float inc_ind = 0.5;  // // specify significance for the color of the incident ray
   // Constructors.
   Cosine();                          // set color to (0, 0, 0).
-  Cosine(float c);                   // set color to (c, c, c).
+  explicit Cosine(float c);                   // set color to (c, c, c).
   Cosine(float r, float g, float b); // set color to (r, g, b).
-  Cosine(const RGBColor &c);         // set color to c.
+  explicit Cosine(const RGBColor &c);         // set color to c.
 
-  // Copy constuctor and assignment operator.
+  // Copy constructor and assignment operator.
   Cosine(const Cosine &other);
   Cosine &operator=(const Cosine &other);
 
-  // Desctructor.
-  virtual ~Cosine() = default;
+  // Destructor.
+  ~Cosine() override = default;
 
   /* Returned shade is: color * cos \theta.
      \theta is the angle between the normal at the hit pont and the ray.
      Assuming unit vectors, cos \theta = dot product of normal and -ray.dir.
   */
-  virtual RGBColor shade(const ShadeInfo &sinfo) const override;
+  [[nodiscard]] RGBColor shade(const ShadeInfo &sinfo) const override;
 
-    virtual float get_r_index() const override;
-    virtual float get_inc_index() const override;
+  [[nodiscard]] float get_r_index() const override;
 };
